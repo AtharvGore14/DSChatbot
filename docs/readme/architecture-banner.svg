@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 280" role="img" aria-labelledby="title desc">
+  <title id="title">FinPilot DS  how the pieces connect</title>
+  <desc id="desc">Browser talks to Flask; Flask uses SQLite for users and runs a C++ program for data structures; results return as JSON.</desc>
+  <defs>
+    <linearGradient id="panel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#252542"/>
+      <stop offset="100%" stop-color="#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <rect width="920" height="280" fill="#0f0f1a" rx="16"/>
+  <text x="460" y="38" text-anchor="middle" fill="#e2e8f0" font-family="system-ui,Segoe UI,sans-serif" font-size="18" font-weight="600">How FinPilot DS fits together</text>
+  <text x="460" y="58" text-anchor="middle" fill="#94a3b8" font-family="system-ui,Segoe UI,sans-serif" font-size="12">One glance for new contributors</text>
+
+  <!-- Browser -->
+  <g filter="url(#shadow)">
+    <rect x="40" y="85" width="200" height="150" fill="url(#panel)" stroke="#475569" stroke-width="1.5" rx="12"/>
+  </g>
+  <text x="140" y="118" text-anchor="middle" fill="#a5b4fc" font-family="system-ui,Segoe UI,sans-serif" font-size="14" font-weight="600">Your browser</text>
+  <text x="140" y="140" text-anchor="middle" fill="#cbd5e1" font-family="system-ui,Segoe UI,sans-serif" font-size="11">HTML pages + CSS + JS</text>
+  <text x="140" y="165" text-anchor="middle" fill="#94a3b8" font-family="system-ui,Segoe UI,sans-serif" font-size="10">Dashboard, Demo, Chatbot&</text>
+
+  <!-- Flask -->
+  <g filter="url(#shadow)">
+    <rect x="360" y="75" width="200" height="170" fill="url(#panel)" stroke="#6366f1" stroke-width="2" rx="12"/>
+  </g>
+  <text x="460" y="108" text-anchor="middle" fill="#a5b4fc" font-family="system-ui,Segoe UI,sans-serif" font-size="14" font-weight="600">Flask (Python)</text>
+  <text x="460" y="130" text-anchor="middle" fill="#cbd5e1" font-family="system-ui,Segoe UI,sans-serif" font-size="11">app.py  routes &amp; sessions</text>
+  <rect x="380" y="142" width="160" height="28" fill="#312e81" rx="6"/>
+  <text x="460" y="161" text-anchor="middle" fill="#c7d2fe" font-family="system-ui,Segoe UI,sans-serif" font-size="10">SQLite users ù auth_db.py</text>
+  <rect x="380" y="178" width="160" height="28" fill="#312e81" rx="6"/>
+  <text x="460" y="197" text-anchor="middle" fill="#c7d2fe" font-family="system-ui,Segoe UI,sans-serif" font-size="10">Optional LLM API (chat)</text>
+  <rect x="380" y="214" width="160" height="28" fill="#4c1d95" rx="6"/>
+  <text x="460" y="233" text-anchor="middle" fill="#e9d5ff" font-family="system-ui,Segoe UI,sans-serif" font-size="10">Spawns C++ engine subprocess</text>
+
+  <!-- C++ -->
+  <g filter="url(#shadow)">
+    <rect x="680" y="85" width="200" height="150" fill="url(#panel)" stroke="#475569" stroke-width="1.5" rx="12"/>
+  </g>
+  <text x="780" y="118" text-anchor="middle" fill="#a5b4fc" font-family="system-ui,Segoe UI,sans-serif" font-size="14" font-weight="600">C++ engine</text>
+  <text x="780" y="140" text-anchor="middle" fill="#cbd5e1" font-family="system-ui,Segoe UI,sans-serif" font-size="11">ds_engine.exe / ds_engine</text>
+  <text x="780" y="165" text-anchor="middle" fill="#94a3b8" font-family="system-ui,Segoe UI,sans-serif" font-size="10">Trie ù Sort ù Graph ù AVL</text>
+  <text x="780" y="190" text-anchor="middle" fill="#64748b" font-family="system-ui,Segoe UI,sans-serif" font-size="10">Outputs JSON to stdout</text>
+
+  <!-- Arrows -->
+  <path d="M 245 155 L 350 155" stroke="url(#accent)" stroke-width="3" fill="none"/>
+  <polygon points="350,155 335,148 335,162" fill="#8b5cf6"/>
+  <text x="297" y="145" text-anchor="middle" fill="#94a3b8" font-family="system-ui,Segoe UI,sans-serif" font-size="9">HTTP</text>
+
+  <path d="M 565 155 L 670 155" stroke="url(#accent)" stroke-width="3" fill="none"/>
+  <polygon points="670,155 655,148 655,162" fill="#8b5cf6"/>
+  <text x="617" y="145" text-anchor="middle" fill="#94a3b8" font-family="system-ui,Segoe UI,sans-serif" font-size="9">JSON</text>
+
+  <path d="M 565 110 Q 620 60 780 75" stroke="#475569" stroke-width="1.5" fill="none" stroke-dasharray="6 4"/>
+  <text x="640" y="62" fill="#64748b" font-family="system-ui,Segoe UI,sans-serif" font-size="9">results feed charts &amp; APIs</text>
+</svg>
