@@ -75,6 +75,84 @@ Other engine entry points (`search`, `heap` top-k, `hash`, `bst`, `stack`, `queu
 
 ---
 
+## Screenshots
+
+These images live in the [`img/`](img/) folder. They show the main user flows: **public pages first**, then **after login**, then **tools** (search, compare, optimizer, analysis, chatbot) and the **Algorithms Lab** wired to the C++ engine.
+
+### Home (before login)
+
+Landing page: catalog snapshot, market-style metrics, and navigation — **no account required** to browse the marketing view.
+
+<p align="center">
+  <img src="img/HOME_BEFORE_LOGIN.png" alt="FinPilot DS home page before login" width="92%" />
+</p>
+
+### Login
+
+Email + password authentication; passwords are hashed and stored in **SQLite** (`auth_db.py`).
+
+<p align="center">
+  <img src="img/LOGIN.png" alt="Login page" width="92%" />
+</p>
+
+### Dashboard
+
+Hub after sign-in — jump-off point for analysis, compare, optimizer, and other gated areas.
+
+<p align="center">
+  <img src="img/DASHBOARD.png" alt="Dashboard after login" width="92%" />
+</p>
+
+### Search
+
+Ticker search with **prefix suggestions** powered by the **trie** in `cpp_backend` (also exposed as `/api/ds/trie`).
+
+<p align="center">
+  <img src="img/SEARCH.png" alt="Search page with trie suggestions" width="92%" />
+</p>
+
+### Compare
+
+Multi-symbol **comparison** view for symbols in the static catalog.
+
+<p align="center">
+  <img src="img/COMPARISON.png" alt="Stock comparison page" width="92%" />
+</p>
+
+### Optimizer
+
+Portfolio-style **optimizer**: budget, risk level, time horizon, and goal — charts are **illustrative / coursework** (not investment advice).
+
+<p align="center">
+  <img src="img/OPTIMIZER.png" alt="Portfolio optimizer page" width="92%" />
+</p>
+
+### Analysis
+
+Data analysis workspace; reports can be exported as **PDF** (`/analysis/export`).
+
+<p align="center">
+  <img src="img/ANALYSIS.png" alt="Analysis page" width="92%" />
+</p>
+
+### Chatbot
+
+Assistant UI — uses **built-in replies** by default, or an **OpenAI-compatible API** when `CHAT_API_URL` and `CHAT_API_KEY` are set.
+
+<p align="center">
+  <img src="img/CHATBOT.png" alt="Chatbot page" width="92%" />
+</p>
+
+### Algorithms Lab (Visual Demo)
+
+**Hands-on demo** of the C++ engine: sorting (merge / quick / heap) and graph algorithms (BFS / DFS / Dijkstra) with results rendered in the UI.
+
+<p align="center">
+  <img src="img/VISUAL%20DEMO.png" alt="Algorithms lab visual demo page" width="92%" />
+</p>
+
+---
+
 ## Tech stack
 
 - **Backend:** Python 3, **Flask**, SQLite (`auth_db.py`, local `finpilot_users.db` created at runtime)
@@ -180,11 +258,12 @@ Exact query parameters and payloads match validation in `app.py` (length limits,
 ├── app.py                 # Flask app, routes, C++ bridge
 ├── auth_db.py             # SQLite auth helpers
 ├── requirements.txt
+├── img/                   # README screenshots (UI tour)
 ├── cpp_backend/
 │   ├── data_structures.cpp
 │   └── ds_engine.exe      # Windows binary (rebuild on other OS)
 ├── database/
-├── static/                # css, js, images
+├── static/                # css, js, logo (served by Flask)
 └── templates/             # Jinja HTML
 ```
 
