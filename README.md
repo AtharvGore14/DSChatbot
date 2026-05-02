@@ -6,6 +6,58 @@ A Flask web app that combines a **financial-style dashboard**, **interactive dem
 
 ---
 
+## Project overview
+
+FinPilot DS is split into three layers:
+
+1. **Web layer (Python / Flask)** — Serves HTML pages, handles **login sessions**, talks to **SQLite** for user accounts, and calls the engine when a page or API needs algorithmic output.
+2. **Algorithms layer (C++17)** — A small program (`cpp_backend/ds_engine.exe`) that implements classic **data structures and algorithms** and prints **JSON** to standard output. Python runs it as a **subprocess**, reads that JSON, and shows it in charts, tables, or API responses.
+3. **Application features** — Finance-themed screens (dashboard, analysis, compare, optimizer, chatbot) use **sample/static market data** for repeatable demos; they are **not** a live brokerage.
+
+**Why C++ for data structures?** The course project keeps heavy algorithm work in a compiled binary so you can demonstrate **efficient** implementations (trees, heaps, graphs) separately from the Flask UI. The website stays simple; the engine stays fast and deterministic.
+
+---
+
+## Data structures & algorithms
+
+### What is a “data structure” here?
+
+A **data structure** is a way of organizing values in memory so common operations are efficient — for example, a **trie** makes prefix search fast; an **AVL tree** keeps insert/search balanced; a **graph** models relationships between sector nodes; **sorting algorithms** reorder arrays for analysis and display. This repo **implements** those structures in C++ and **connects** them to the browser through Flask.
+
+### Implemented in the C++ engine (`data_structures.cpp`)
+
+The executable supports multiple commands. Below is what each part is for.
+
+| Topic | Implementation | What it does |
+|--------|----------------|--------------|
+| **Trie (prefix tree)** | `Trie` + `TrieNode` (children via character map) | Inserts ticker symbols, returns **prefix suggestions** (used by `/search` and `/api/ds/trie`). |
+| **Self-balancing BST** | **AVL tree** (`AVLTree`) | Inserts integers with rotations; outputs **in-order traversal** (sorted order of keys). |
+| **Binary search tree** | `BSTNode`, `bst_insert`, `bst_inorder` | Classic BST insert + in-order walk (available in engine CLI as `bst`). |
+| **Heap** | **Max-heap** (`MaxHeap`) + `heap_sort` uses `priority_queue` | **Top-k** extraction; heap sort builds sorted output via a min-heap priority queue. |
+| **Sorting** | **Merge sort**, **Quick sort**, **Heap sort** | User-selectable (`merge` / `quick` / `heap`) over a list of integers. |
+| **Searching** | **Linear search**, **Binary search** | Engine CLI `search` with `linear` or `binary` on parsed arrays. |
+| **Graph** | Adjacency list (`unordered_map` + edges), **BFS** (`queue`), **DFS** (recursive / implicit stack), **Dijkstra** (`priority_queue` min-heap) | Fixed demo graph between sector-like labels (`IT`, `BANKING`, …); returns traversal order or shortest distances. |
+| **Hash table** | Separate chaining (`HashTable`, bucket vector + lists) | Key→value lookup demo (engine CLI `hash`). |
+| **Stack / Queue** | `SimpleStack`, `SimpleQueue` | LIFO/FIFO demos on string tokens (engine CLI `stack`, `queue`). |
+
+**Graph detail:** BFS uses an explicit **queue** and visited map; DFS walks recursively; Dijkstra uses a **priority queue** for shortest paths on weighted edges.
+
+### What the Flask app uses today
+
+Not every engine command has a REST route yet. The web app **actively calls** the subprocess for:
+
+| Engine use | Flask / UX |
+|------------|------------|
+| `health` | `/api/ds/health` — sanity check |
+| `trie <prefix>` | **`/search`** (symbol suggestions) and **`/api/ds/trie`** |
+| `sort <algo> <csv>` | **`/demo`**, **`/api/ds/sort`** — merge / quick / heap |
+| `graph <algo> <start>` | **`/demo`**, **`/api/ds/graph`** — BFS / DFS / Dijkstra |
+| `avl <csv>` | **`/api/ds/avl`** — balanced tree in-order result |
+
+Other engine entry points (`search`, `heap` top-k, `hash`, `bst`, `stack`, `queue`) are implemented in the **same binary** and can be wired to new routes or tested by invoking `ds_engine.exe` from the command line with the appropriate arguments (see `main()` in `data_structures.cpp`).
+
+---
+
 ## Features
 
 | Area | What you get |
