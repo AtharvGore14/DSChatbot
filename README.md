@@ -263,9 +263,23 @@ Exact query parameters and payloads match validation in `app.py` (length limits,
 │   ├── data_structures.cpp
 │   └── ds_engine.exe      # Windows binary (rebuild on other OS)
 ├── database/
+├── githooks/              # optional: normalize commit messages (see below)
+├── scripts/               # git hook helper script
 ├── static/                # css, js, logo (served by Flask)
 └── templates/             # Jinja HTML
 ```
+
+### Git: single-author commits (for class / portfolio)
+
+GitHub’s **Contributors** sidebar counts people listed in **`Co-authored-by:`** lines on commits, not only the primary author. For a solo project, keep commits free of those trailers.
+
+This repository includes an optional **`prepare-commit-msg`** hook that strips **`Co-authored-by:`** lines before each commit is recorded. Enable it once from the project root:
+
+```bash
+git config core.hooksPath githooks
+```
+
+If your GitHub repo previously showed an extra contributor after older commits, history may need to be rewritten once on your machine; after that, only your account should remain in **Insights → Contributors** once GitHub refreshes.
 
 ---
 
