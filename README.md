@@ -164,7 +164,7 @@ Base URL: `http://127.0.0.1:5000`
 | `/api/ds/sort` | GET | Sort — `algo` ∈ `merge`, `quick`, `heap`; `data` = comma-separated ints |
 | `/api/ds/graph` | GET | Graph — `algo` ∈ `bfs`, `dfs`, `dijkstra`; `start` = node label |
 | `/api/ds/avl` | GET | AVL build steps — `data` = comma-separated ints |
-| `/api/optimizer/preview` | POST | Optimizer preview (JSON body per app) |
+| `/api/optimizer/preview` | GET | Optimizer preview (`budget`, `risk`, `horizon`, `goal` query params → JSON) |
 | `/api/chatbot` | POST | Chatbot API |
 | `/api/market/gainers` | GET | Sample gainers list |
 | `/api/market/sectors` | GET | Sector strength payload |
