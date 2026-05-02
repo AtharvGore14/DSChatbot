@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block title %}Stock Search · FinPilot DS{% endblock %}
+{% block page_title %}Stock Search{% endblock %}
+
+{% block head_extra %}
+<style>
+    .search-kpi {
+        border-radius: 14px;
+        padding: 0.85rem 1rem;
+        border: 1px solid var(--stroke);
+        background: #fff;
+        height: 100%;
+        box-shadow: 0 6px 18px rgba(24, 52, 104, 0.05);
+    }
+    .search-kpi small { color: var(--muted); display: block; margin-bottom: 0.25rem; }
+    .search-kpi strong { font-size: 1.05rem; word-break: break-word; }
+    .search-insight {
+        border-left: 4px solid var(--blue);
+        padding: 0.55rem 0.85rem;
+        background: #f4f8ff;
+        border-radius: 0 10px 10px 0;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    .search-chart-box {
+        min-height: 260px;
+        position: relative;
+    }
+    .search-chart-box canvas { max-height: 260px; }
+    .suggestion-chip a {
+        color: inherit;
+        text-decoration: none;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.searchChartData = {{ search_chart_data|tojson }};
+</script>
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+
+<p class="text-muted small mb-3">Search tickers or prefixes — exact match, Trie (when available), then fallbacks.</p>
+
+<div class="row g-3 mb-3">
+    <div class="col-12">
+        <div class="glass-card p-4 h-100">
+            <h5 class="mb-2">Find symbols</h5>
+            <p class="small text-muted mb-3">Supports exact tickers (<code>TCS.NS</code>), compact prefixes (<code>RE</code>), or tolerant spelling — press Search or Enter.</p>
+            <form class="row g-2" method="get" action="{{ url_for('search') }}" autocomplete="off">
+                <div class="col-md-8">
+                    <label class="form-label small text-muted mb-1">Query</label>
+                    <input name="q" type="text" class="form-control" maxlength="24"
+                           placeholder="Try: RELIANCE.NS / RE / TCS / relaince"
+                           value="{{ query }}">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-gradient w-100">Search</button>
+                </div>
+            </form>
+            <div class="mt-3">
+                <span class="small text-muted me-2">Quick picks:</span>
+                {% for sym in popular_pick_symbols %}
+                <a class="btn btn-sm btn-outline-primary me-1 mb-1" href="{{ url_for('search', q=sym) }}">{{ sym|replace('.NS', '') }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="search-kpi">
+            <small>Query length</small>
+            <strong>{{ query|length if query else '—' }}</strong>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="search-kpi">
+            <small>Raw suggestions</small>
+            <strong>{{ suggestions|length }}</strong>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="search-kpi">
+            <small>Catalog rows</small>
+            <strong>{{ result_count }}</strong>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="search-kpi">
+            <small>Match mode</small>
+            <strong class="text-capitalize">{{ match_mode or '—' }}</strong>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="search-kpi">
+            <small>Data source</small>
+            <strong class="small">{{ source or '—' }}</strong>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl-2">
+        <div class="search-kpi">
+            <small>Engine</small>
+            <strong class="small">{{ 'Notice' if error_message else 'OK' }}</strong>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card p-4 mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div>
+            <h5 class="mb-1">Results</h5>
+            {% if query %}
+            <p class="small text-muted mb-0">
+                {% if suggestions %}
+                Suggestions for <strong>{{ query }}</strong>
+                {% if source %}from <span class="badge badge-soft">{{ source }}</span>{% endif %}
+                {% else %}
+                No suggestion strings for <strong>{{ query }}</strong>.
+                {% endif %}
+            </p>
+            {% else %}
+            <p class="small text-muted mb-0">Submit a query to populate suggestions, charts, and catalog-backed rows.</p>
+            {% endif %}
+        </div>
+        {% if query and result_count %}
+        <span class="badge rounded-pill text-bg-primary">{{ result_count }} catalog row{{ 's' if result_count != 1 else '' }}</span>
+        {% endif %}
+    </div>
+
+    {% if error_message %}
+    <div class="alert alert-warning py-2 small mb-3">{{ error_message }}</div>
+    {% endif %}
+
+    {% if query and suggestions %}
+    <p class="small text-secondary mb-2">Raw suggestions <span class="text-muted">(click to search)</span></p>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        {% for symbol in suggestions %}
+        <span class="badge badge-soft suggestion-chip"><a href="{{ url_for('search', q=symbol) }}">{{ symbol }}</a></span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Symbol</th>
+                    <th>Sector</th>
+                    <th class="text-end">Price</th>
+                    <th class="text-end">Change</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in search_rows %}
+                <tr>
+                    <td><strong>{{ row.symbol }}</strong></td>
+                    <td><span class="badge rounded-pill badge-soft">{{ row.sector }}</span></td>
+                    <td class="text-end">₹ {{ row.price }}</td>
+                    <td class="text-end {{ 'text-success' if row.change >= 0 else 'text-danger' }}">{{ row.change }}%</td>
+                    <td class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('analysis', symbol=row.symbol) }}" class="btn btn-sm btn-outline-primary">Analyze</a>
+                        <a href="{{ url_for('compare', s1=row.symbol, s2='INFY.NS') }}" class="btn btn-sm btn-outline-primary">Compare</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if query and not search_rows %}
+                <tr>
+                    <td colspan="5" class="text-secondary py-4">
+                        {% if suggestions %}
+                        Suggestions exist but none map to the in-memory <code>STOCKS</code> catalog — add symbols in <code>app.py</code> or pick quick picks above.
+                        {% else %}
+                        No matches — shorten your prefix or try a quick pick.
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+                {% if not query %}
+                <tr>
+                    <td colspan="5" class="text-secondary py-4 text-center">
+                        Enter a ticker or prefix to see results here.
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if search_insights %}
+<div class="glass-card p-4 mb-3">
+    <h6 class="fw-bold mb-3">Summary</h6>
+    {% for line in search_insights %}
+    <div class="search-insight">{{ line }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if query and search_chart_data and search_chart_data.labels %}
+<div class="row g-3 mb-3">
+    <div class="col-lg-6">
+        <div class="glass-card p-3 premium-panel h-100">
+            <h6 class="fw-bold mb-1">Matched movers (% change)</h6>
+            <p class="small text-muted mb-3">Colors encode sign — reinforces table column without extra queries.</p>
+            <div class="search-chart-box">
+                <canvas id="searchChangeChart" height="240"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-3 premium-panel h-100">
+            <h6 class="fw-bold mb-1">Matched prices (₹)</h6>
+            <p class="small text-muted mb-3">Relative scale across the suggestion list returned for this query.</p>
+            <div class="search-chart-box">
+                <canvas id="searchPriceChart" height="240"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

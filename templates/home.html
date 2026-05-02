@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% block title %}Home · FinPilot DS{% endblock %}
+{% block page_title %}Home{% endblock %}
+
+{% block head_extra %}
+<style>
+    .home-hero {
+        border-radius: 18px;
+        padding: clamp(1.25rem, 3vw, 2.25rem);
+        border: 1px solid #dbe7ff;
+        background: linear-gradient(142deg, #f8fbff 0%, #eef4ff 48%, #ffffff 92%);
+        box-shadow: 0 14px 40px rgba(36, 74, 144, 0.09);
+        overflow: hidden;
+        position: relative;
+    }
+    .home-hero::after {
+        content: "";
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        right: -80px;
+        top: -100px;
+        background: radial-gradient(circle, rgba(24, 117, 240, 0.14), transparent 68%);
+        pointer-events: none;
+    }
+    .home-hero h1 {
+        font-family: "Space Grotesk", sans-serif;
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+    }
+    .home-badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-bottom: 1rem;
+    }
+    .home-chip {
+        font-size: 0.72rem;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.28rem 0.65rem;
+        border: 1px solid #cfe0fb;
+        background: rgba(255, 255, 255, 0.85);
+        color: #2159b3;
+    }
+    .home-pill-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    .home-pill-actions a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.42rem 1rem;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid #c9dbff;
+        background: #fff;
+        color: #2159b3;
+        box-shadow: 0 4px 14px rgba(36, 74, 144, 0.07);
+        transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+    .home-pill-actions a:hover {
+        background: linear-gradient(135deg, #1875f0, #0a55c0);
+        color: #fff;
+        border-color: transparent;
+        transform: translateY(-1px);
+    }
+    .home-side-panel {
+        border-radius: 16px;
+        border: 1px solid var(--stroke);
+        background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+        padding: 1.15rem 1.25rem;
+        box-shadow: 0 10px 26px rgba(23, 44, 86, 0.06);
+    }
+    .home-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .home-stat {
+        text-align: center;
+        padding: 0.55rem 0.35rem;
+        border-radius: 12px;
+        background: #f4f8ff;
+        border: 1px solid #e4ecfb;
+    }
+    .home-stat strong {
+        display: block;
+        font-size: 1.2rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+    .home-stat span {
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+    .home-flow {
+        display: grid;
+        gap: 0.65rem;
+    }
+    @media (min-width: 768px) {
+        .home-flow {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+    .home-flow-step {
+        border-radius: 14px;
+        border: 1px solid var(--stroke);
+        padding: 0.85rem 1rem;
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(21, 49, 98, 0.05);
+    }
+    .home-flow-step .step-num {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: linear-gradient(145deg, #1875f0, #0a55c0);
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.82rem;
+        display: grid;
+        place-items: center;
+        margin-bottom: 0.45rem;
+    }
+    .home-feature-card {
+        border-radius: 14px;
+        border: 1px solid var(--stroke);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        text-decoration: none;
+        color: inherit;
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+        background: #fff;
+        overflow: hidden;
+    }
+    .home-feature-card:hover {
+        transform: translateY(-4px);
+        border-color: #cfe0fb;
+        box-shadow: 0 18px 36px rgba(24, 64, 128, 0.1);
+        color: inherit;
+    }
+    .home-feature-card:focus-visible {
+        outline: 2px solid #1875f0;
+        outline-offset: 2px;
+    }
+    .home-feature-card .card-foot {
+        margin-top: auto;
+        padding-top: 0.65rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--blue);
+    }
+    .home-feature-card .card-foot i {
+        opacity: 0.55;
+        transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+    .home-feature-card:hover .card-foot i {
+        opacity: 1;
+        transform: translateX(4px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="home-hero glass-card mb-4 mb-lg-5">
+    <div class="row align-items-center g-4 position-relative" style="z-index: 1;">
+        <div class="col-lg-7">
+            <div class="home-badge-row">
+                <span class="home-chip">Flask + Chart.js</span>
+                <span class="home-chip">C++ DS engine</span>
+                <span class="home-chip">Course-ready UX</span>
+            </div>
+            <p class="small fw-semibold text-primary mb-2" style="letter-spacing: 0.04em;">Welcome{% if user_first_name %}, {{ user_first_name }}{% endif %}</p>
+            <h1 class="display-5 fw-bold mb-3">Financial intelligence playground backed by data structures</h1>
+            <p class="lead text-secondary mb-3 mb-lg-4" style="font-size: 1.05rem;">
+                {% if user_first_name %}Here’s your hub for markets and structured analytics, {{ user_first_name }}. {% endif %}Explore movers on the dashboard, compare peers, optimize sleeves by risk, and step through Trie · AVL · graph modules — one workspace for analysis and reporting.
+            </p>
+            <div class="d-flex flex-wrap gap-2 mb-1">
+                <a class="btn btn-gradient px-4 rounded-pill" href="{{ url_for('dashboard') }}"><i class="fa-solid fa-gauge-high me-2"></i>Open dashboard</a>
+                <a class="btn btn-outline-primary px-4 rounded-pill" href="{{ url_for('demo') }}"><i class="fa-solid fa-flask-vial me-2"></i>Open Algorithms Lab</a>
+            </div>
+            <div class="home-pill-actions">
+                <a href="{{ url_for('search') }}"><i class="fa-solid fa-magnifying-glass"></i>Search</a>
+                <a href="{{ url_for('compare', s1='TCS.NS', s2='INFY.NS') }}"><i class="fa-solid fa-scale-balanced"></i>Compare</a>
+                <a href="{{ url_for('optimizer') }}"><i class="fa-solid fa-layer-group"></i>Optimizer</a>
+                <a href="{{ url_for('chatbot') }}"><i class="fa-solid fa-robot"></i>Chatbot</a>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="home-side-panel mini-metrics">
+                <h5 class="mb-3 fw-bold">Live catalog snapshot</h5>
+                <div class="home-stat-grid">
+                    <div class="home-stat">
+                        <strong>{{ catalog_symbols }}</strong>
+                        <span>Symbols</span>
+                    </div>
+                    <div class="home-stat">
+                        <strong class="text-success">{{ market_advancers }}</strong>
+                        <span>Up</span>
+                    </div>
+                    <div class="home-stat">
+                        <strong class="text-danger">{{ market_decliners }}</strong>
+                        <span>Down / flat</span>
+                    </div>
+                </div>
+                <div class="metric-item"><span>Portfolio optimizer</span><strong>Risk presets</strong></div>
+                <div class="metric-item"><span>Market pulse</span><strong>Lens filters</strong></div>
+                <div class="metric-item mb-0 border-bottom-0"><span>Engine hooks</span><strong>Trie · Sort · Graph</strong></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-4 mb-lg-5">
+    <h2 class="h5 fw-bold mb-2">Suggested flow</h2>
+    <p class="text-muted small mb-3">A tidy path for walkthroughs — skip ahead anytime from the sidebar.</p>
+    <div class="home-flow">
+        <div class="home-flow-step">
+            <div class="step-num">1</div>
+            <h6 class="fw-bold mb-1">Orient</h6>
+            <p class="small text-muted mb-0">Open the dashboard and try market lenses (advancers, sectors).</p>
+        </div>
+        <div class="home-flow-step">
+            <div class="step-num">2</div>
+            <h6 class="fw-bold mb-1">Dig in</h6>
+            <p class="small text-muted mb-0">Search a ticker, open Analysis, then Compare against peers.</p>
+        </div>
+        <div class="home-flow-step">
+            <div class="step-num">3</div>
+            <h6 class="fw-bold mb-1">Show DS depth</h6>
+            <p class="small text-muted mb-0">In the lab: run sort first, then reveal Trie · AVL · graph visualizations.</p>
+        </div>
+    </div>
+</section>
+
+<section class="mb-2">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+        <div>
+            <h2 class="h5 fw-bold mb-1">Modules</h2>
+            <p class="text-muted small mb-0">Jump straight into each part of the app.</p>
+        </div>
+        <a class="small fw-semibold text-decoration-none" href="{{ url_for('about') }}">About project →</a>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6 col-xl-4">
+            <a class="home-feature-card glass-card p-3 hover-lift" href="{{ url_for('dashboard') }}">
+                <i class="fa-solid fa-chart-line icon-pill"></i>
+                <h6 class="mt-3 fw-bold mb-2">Dashboard</h6>
+                <p class="small text-secondary mb-0">Pulse chart, breadth buckets, sector rails, and lens-driven snapshots.</p>
+                <div class="card-foot">Launch<i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a class="home-feature-card glass-card p-3 hover-lift" href="{{ url_for('search') }}">
+                <i class="fa-solid fa-magnifying-glass icon-pill"></i>
+                <h6 class="mt-3 fw-bold mb-2">Stock search</h6>
+                <p class="small text-secondary mb-0">Trie-backed prefixes plus resilient Python fallbacks to catalog rows.</p>
+                <div class="card-foot">Try search<i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a class="home-feature-card glass-card p-3 hover-lift" href="{{ url_for('analysis') }}">
+                <i class="fa-solid fa-chart-pie icon-pill"></i>
+                <h6 class="mt-3 fw-bold mb-2">Analysis</h6>
+                <p class="small text-secondary mb-0">Single-symbol breakdown with charts linked from search & optimizer.</p>
+                <div class="card-foot">Open analysis<i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a class="home-feature-card glass-card p-3 hover-lift" href="{{ url_for('compare') }}">
+                <i class="fa-solid fa-scale-balanced icon-pill"></i>
+                <h6 class="mt-3 fw-bold mb-2">Compare</h6>
+                <p class="small text-secondary mb-0">Up to eight symbols — KPIs, dual charts, and cohort-normalized table.</p>
+                <div class="card-foot">Compare lab<i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a class="home-feature-card glass-card p-3 hover-lift" href="{{ url_for('optimizer') }}">
+                <i class="fa-solid fa-layer-group icon-pill"></i>
+                <h6 class="mt-3 fw-bold mb-2">Optimizer</h6>
+                <p class="small text-secondary mb-0">Risk templates to rupees — sleeves, exemplars, and Monte Carlo stub.</p>
+                <div class="card-foot">Build sleeves<i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a class="home-feature-card glass-card p-3 hover-lift" href="{{ url_for('demo') }}">
+                <i class="fa-solid fa-flask-vial icon-pill"></i>
+                <h6 class="mt-3 fw-bold mb-2">Algorithms Lab</h6>
+                <p class="small text-secondary mb-0">Sort arena plus on-demand Trie, AVL, and graph reveals.</p>
+                <div class="card-foot">Enter lab<i class="fa-solid fa-arrow-right"></i></div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="glass-card p-4 p-md-4 mt-4 rounded-4 border border-light-subtle" style="background: linear-gradient(120deg, #f7fbff, #ffffff);">
+    <div class="row align-items-center g-3">
+        <div class="col-md-8">
+            <h3 class="h6 fw-bold mb-2">Need narrative mode?</h3>
+            <p class="small text-muted mb-0">Use the chatbot for guided wording and links — pairs well after Dashboard + Algorithms Lab walkthroughs.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a class="btn btn-outline-primary rounded-pill px-4" href="{{ url_for('chatbot') }}"><i class="fa-solid fa-comments me-2"></i>Open chatbot</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

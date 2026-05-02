@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · FinPilot DS{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block head_extra %}
+<style>
+    .dash-hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.85rem;
+    }
+    .dash-curve-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 1.05rem;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid #c9dbff;
+        background: #ffffff;
+        color: #2159b3;
+        box-shadow: 0 4px 14px rgba(36, 74, 144, 0.07);
+        transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+    .dash-curve-btn:hover {
+        background: linear-gradient(135deg, #1875f0, #0a55c0);
+        color: #fff;
+        border-color: transparent;
+        transform: translateY(-1px);
+    }
+    .dash-curve-btn--compact {
+        padding: 0.32rem 0.82rem;
+        font-size: 0.76rem;
+    }
+    .dash-focus-panel {
+        border-color: #dbe7ff;
+        background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+    }
+    .dash-pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .dash-pill {
+        border-radius: 999px;
+        padding: 0.35rem 0.95rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        border: 1px solid #d5e3fc;
+        background: #fff;
+        color: #2159b3;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .dash-pill:hover {
+        border-color: #1875f0;
+        background: #f0f6ff;
+    }
+    .dash-pill.active {
+        background: linear-gradient(135deg, #1875f0, #0a55c0);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 6px 18px rgba(24, 117, 240, 0.3);
+    }
+    .pulse-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.65rem;
+        margin-bottom: 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="premium-hero mb-3 flex-column flex-md-row align-items-start align-items-md-center">
+    <div class="flex-grow-1">
+        <h4 class="mb-1">Market Intelligence Center</h4>
+        <p class="mb-0 text-muted small">Live movers from your catalog — use lenses below to slice advancers, decliners, or sectors.</p>
+        <div class="dash-hero-actions">
+            <a class="dash-curve-btn" href="{{ url_for('search') }}"><i class="fa-solid fa-magnifying-glass"></i>Search</a>
+            <a class="dash-curve-btn" href="{{ url_for('compare') }}"><i class="fa-solid fa-scale-balanced"></i>Compare</a>
+            <a class="dash-curve-btn" href="{{ url_for('optimizer') }}"><i class="fa-solid fa-layer-group"></i>Optimizer</a>
+            <a class="dash-curve-btn" href="{{ url_for('analysis') }}"><i class="fa-solid fa-chart-pie"></i>Analysis</a>
+        </div>
+    </div>
+    <div class="hero-badges mt-3 mt-md-0">
+        <span class="hero-badge">Snapshot</span>
+        <span class="hero-badge">Your lenses</span>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-4">
+        <div class="glass-card p-3 stat-card premium-stat">
+            <p class="text-secondary mb-1 small fw-semibold">Catalog symbols</p>
+            <h3 class="mb-0">{{ dashboard_catalog|length }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card p-3 stat-card premium-stat">
+            <p class="text-secondary mb-1 small fw-semibold">Advancers today</p>
+            <h3 class="mb-0 text-success">{{ gainers }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-card p-3 stat-card premium-stat">
+            <p class="text-secondary mb-1 small fw-semibold">Decliners</p>
+            <h3 class="mb-0 text-danger">{{ losers }}</h3>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card p-3 mb-3 dash-focus-panel" id="dashLensBar">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+        <div>
+            <h6 class="mb-1 fw-bold">Market lens</h6>
+            <p class="small text-muted mb-0">Filters pulse line, snapshot list, snapshot chart, and top movers together.</p>
+        </div>
+    </div>
+    <div class="dash-pill-row" role="group" aria-label="Dashboard lens">
+        <button type="button" class="dash-pill active" data-dash-lens="all">All</button>
+        <button type="button" class="dash-pill" data-dash-lens="up">Advancers</button>
+        <button type="button" class="dash-pill" data-dash-lens="down">Decliners</button>
+        <button type="button" class="dash-pill" data-dash-lens="IT">IT</button>
+        <button type="button" class="dash-pill" data-dash-lens="BANKING">Banking</button>
+        <button type="button" class="dash-pill" data-dash-lens="FMCG">FMCG</button>
+        <button type="button" class="dash-pill" data-dash-lens="ENTERPRISE">Other sectors</button>
+    </div>
+    <p class="small text-muted mt-2 mb-0" id="dashLensHint"></p>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="glass-card p-3 premium-panel">
+            <div class="pulse-toolbar">
+                <div>
+                    <h5 class="mb-0">Market pulse</h5>
+                    <p class="small text-muted mb-0">Top movers inside your lens (up to six names).</p>
+                </div>
+            </div>
+            <canvas id="marketPulseChart" height="120"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card p-3 premium-panel">
+            <h5 class="mb-2">Live snapshot</h5>
+            <p class="small text-muted mb-2">Highest absolute movers in the active lens.</p>
+            <div id="dashSnapshotBody">
+                {% for item in market_snapshot %}
+                <div class="snapshot-row">
+                    <span>{{ item.symbol }}</span>
+                    <span>₹ {{ item.price }}</span>
+                    <span class="{{ 'text-success' if item.change >= 0 else 'text-danger' }}">{{ item.change }}%</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-xl-4">
+        <div class="glass-card p-3 premium-panel chart-tile">
+            <h6 class="mb-2">Market breadth</h6>
+            <canvas id="marketBreadthChart" height="200"></canvas>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="glass-card p-3 premium-panel chart-tile">
+            <h6 class="mb-2">Daily change buckets</h6>
+            <canvas id="changeBucketsChart" height="200"></canvas>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="glass-card p-3 premium-panel chart-tile">
+            <h6 class="mb-2">Snapshot prices</h6>
+            <canvas id="snapshotPriceChart" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-lg-6">
+        <div class="glass-card p-3 premium-panel">
+            <h5 class="mb-3">Sector strength</h5>
+            <canvas id="sectorStrengthChart" height="140"></canvas>
+            <div class="momentum-list mt-3">
+                {% for row in sector_strength_data %}
+                <div class="momentum-item">
+                    <div class="d-flex justify-content-between small">
+                        <span>{{ row.sector }}</span>
+                        <span class="{{ 'text-success' if row.avg_change >= 0 else 'text-danger' }}">{{ row.avg_change }}%</span>
+                    </div>
+                    <div class="momentum-rail">
+                        <span class="momentum-fill {{ 'positive' if row.avg_change >= 0 else 'negative' }}" style="width: {{ (row.avg_change|abs * 30)|round|int if (row.avg_change|abs * 30) < 100 else 100 }}%;"></span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-3 premium-panel">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                <div>
+                    <h5 class="mb-0">Top movers</h5>
+                    <p class="small text-muted mb-0">Strongest % gains in your lens.</p>
+                </div>
+                <a class="dash-curve-btn dash-curve-btn--compact" href="{{ url_for('compare', s1='TCS.NS', s2='INFY.NS') }}">Compare IT duo</a>
+            </div>
+            <div id="dashTopMoversBody">
+                {% for item in top_movers %}
+                <div class="snapshot-row">
+                    <span>{{ item.symbol }}</span>
+                    <span>₹ {{ item.price }}</span>
+                    <span class="{{ 'text-success' if item.change >= 0 else 'text-danger' }}">{{ item.change }}%</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.dashboardCatalogData = {{ dashboard_catalog|tojson }};
+window.dashboardPulseData = {{ market_pulse_data|tojson }};
+window.dashboardSectorData = {{ sector_strength_data|tojson }};
+window.dashboardBreadthData = {{ market_breadth_data|tojson }};
+window.dashboardChangeBucketsData = {{ change_buckets_data|tojson }};
+window.dashboardSnapshotPriceData = {{ snapshot_price_chart_data|tojson }};
+</script>
+{{ super() }}
+{% endblock %}

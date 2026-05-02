@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Admin · FinPilot DS{% endblock %}
+{% block page_title %}Admin Panel{% endblock %}
+{% block content %}
+<div class="glass-card p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">System Overview</h5>
+        <a class="btn btn-gradient btn-sm" href="{{ url_for('admin') }}">Refresh</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Module</th>
+                    <th>Status</th>
+                    <th>Latency</th>
+                    <th>Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for module in modules %}
+                <tr>
+                    <td>{{ module.name }}</td>
+                    <td class="{{ 'text-success' if 'Healthy' in module.status else 'text-info' if 'symbols' in module.status else 'text-warning' }}">{{ module.status }}</td>
+                    <td>{{ module.latency }}</td>
+                    <td>Now</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

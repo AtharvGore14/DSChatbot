@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Create account · FinPilot DS{% endblock %}
+{% block page_title %}Create account{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="glass-card auth-card p-4">
+            <div class="auth-card-brand">
+                <img class="auth-card-logo" src="{{ url_for('static', filename='img/finpilot-logo.svg') }}" width="56" height="56" alt="" decoding="async">
+                <div class="auth-card-headings">
+                    <h4 class="auth-card-title">Create Account</h4>
+                    <p class="auth-card-lead text-muted small">Accounts are saved in a local SQLite database (<code>finpilot_users.db</code>) next to the app.</p>
+                </div>
+            </div>
+            <form method="post" action="{{ url_for('register') }}" class="row g-3 auth-card-form" autocomplete="on">
+                <div class="col-md-6">
+                    <label class="form-label" for="reg-first">First Name</label>
+                    <input type="text" class="form-control" id="reg-first" name="first_name" required
+                           autocomplete="given-name" maxlength="80">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="reg-last">Last Name</label>
+                    <input type="text" class="form-control" id="reg-last" name="last_name" required
+                           autocomplete="family-name" maxlength="80">
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="reg-email">Email</label>
+                    <input type="email" class="form-control" id="reg-email" name="email" required
+                           autocomplete="email">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="reg-password">Password</label>
+                    <input type="password" class="form-control" id="reg-password" name="password" required
+                           autocomplete="new-password" minlength="{{ auth_min_password }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="reg-confirm">Confirm Password</label>
+                    <input type="password" class="form-control" id="reg-confirm" name="confirm_password" required
+                           autocomplete="new-password" minlength="{{ auth_min_password }}">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-gradient w-100">Create Account</button>
+                </div>
+            </form>
+            <p class="small text-muted text-center mt-3 mb-0">
+                Already registered? <a href="{{ url_for('login') }}">Sign in</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

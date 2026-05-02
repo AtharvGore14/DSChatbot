@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}Portfolio Optimizer · FinPilot DS{% endblock %}
+{% block page_title %}Portfolio Optimizer{% endblock %}
+
+{% block head_extra %}
+<style>
+    .opt-insight {
+        border-left: 4px solid var(--blue);
+        padding: 0.45rem 0.75rem;
+        background: #f4f8ff;
+        border-radius: 0 10px 10px 0;
+        margin-bottom: 0.4rem;
+        font-size: 0.875rem;
+    }
+    .opt-chart {
+        min-height: 220px;
+        position: relative;
+    }
+    .opt-chart canvas { max-height: 260px; }
+    .opt-mc-wrap { min-height: 280px; }
+    .opt-mc-wrap canvas { max-height: 300px; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+window.optimizerChartData = {{ allocation_chart_data|tojson }};
+window.optimizerRadarData = {{ optimizer_radar_data|tojson }};
+window.optimizerMcChartData = {{ optimizer_mc_chart_data|tojson }};
+</script>
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-5">
+        <div class="glass-card p-4 h-100">
+            <h5 class="mb-3">Inputs</h5>
+            <form class="row g-3" method="get" action="{{ url_for('optimizer') }}">
+                <div class="col-12">
+                    <label class="form-label">Budget (INR)</label>
+                    <input type="number" name="budget" class="form-control" min="1000" step="1000"
+                           value="{{ budget }}" placeholder="100000" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Risk</label>
+                    <select class="form-select" name="risk">
+                        <option value="Low" {% if risk == 'Low' %}selected{% endif %}>Low</option>
+                        <option value="Medium" {% if risk == 'Medium' %}selected{% endif %}>Medium</option>
+                        <option value="High" {% if risk == 'High' %}selected{% endif %}>High</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Horizon (months)</label>
+                    <select class="form-select" name="horizon">
+                        <option value="12" {% if horizon_months == 12 %}selected{% endif %}>12</option>
+                        <option value="24" {% if horizon_months == 24 %}selected{% endif %}>24</option>
+                        <option value="36" {% if horizon_months == 36 %}selected{% endif %}>36</option>
+                        <option value="60" {% if horizon_months == 60 %}selected{% endif %}>60</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Goal</label>
+                    <select class="form-select" name="goal">
+                        <option value="balanced" {% if goal == 'balanced' %}selected{% endif %}>Balanced</option>
+                        <option value="growth" {% if goal == 'growth' %}selected{% endif %}>Growth</option>
+                        <option value="income" {% if goal == 'income' %}selected{% endif %}>Income</option>
+                    </select>
+                </div>
+                <div class="col-12 d-flex flex-wrap gap-2">
+                    <button type="submit" class="btn btn-gradient">Optimize</button>
+                    <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('optimizer', budget=250000, risk='High', horizon=36, goal='growth') }}">Sample</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                <h6 class="fw-bold mb-0">Monte Carlo stub</h6>
+                <span class="badge badge-soft">model paths</span>
+            </div>
+            <p class="small text-muted mb-2">Three seeded random-walk paths (index 100 = start). Illustrative only.</p>
+            <div class="opt-mc-wrap">
+                <canvas id="allocationMcChart" height="260"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if optimizer_insights %}
+<div class="glass-card p-3 mb-3">
+    {% for line in optimizer_insights %}
+    <div class="opt-insight mb-0">{{ line }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="glass-card p-4 mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h5 class="mb-0">Allocation — {{ risk }}</h5>
+        <div class="d-flex flex-wrap gap-2 small">
+            <span class="badge badge-soft">{{ goal|capitalize }}</span>
+            <span class="badge badge-soft">{{ horizon_months }} mo</span>
+        </div>
+    </div>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <span class="badge badge-soft">{{ optimizer_summary.sector_count }} sectors</span>
+        <span class="badge badge-soft">Top: {{ optimizer_summary.top_sector }} {{ optimizer_summary.top_weight }}%</span>
+        <span class="badge badge-soft">₹ {{ optimizer_summary.total_amount_display }}</span>
+        {% if optimizer_summary.weights_valid %}
+        <span class="badge rounded-pill text-bg-success">100%</span>
+        {% else %}
+        <span class="badge rounded-pill text-bg-warning">Check weights</span>
+        {% endif %}
+    </div>
+
+    <div class="row g-3 align-items-start mb-2">
+        <div class="col-lg-4">
+            <p class="small text-muted mb-1">Weights</p>
+            <div class="opt-chart">
+                <canvas id="allocationChart" height="220"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <p class="small text-muted mb-1">Bars</p>
+            <div class="opt-chart">
+                <canvas id="allocationBarChart" height="220"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <p class="small text-muted mb-1">Posture radar</p>
+            <div class="opt-chart">
+                <canvas id="allocationRadarChart" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Sector</th>
+                    <th class="text-end">%</th>
+                    <th class="text-end">₹</th>
+                    <th>Tickers</th>
+                    <th class="text-end"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in allocation %}
+                <tr>
+                    <td><strong>{{ item.sector }}</strong></td>
+                    <td class="text-end">{{ item.percent }}%</td>
+                    <td class="text-end">{{ item.amount_display }}</td>
+                    <td>
+                        {% if item.exemplars %}
+                        <div class="d-flex flex-wrap gap-1 align-items-center">
+                            {% for ex in item.exemplars %}
+                            <a class="badge rounded-pill badge-soft text-decoration-none"
+                               href="{{ url_for('analysis', symbol=ex.symbol) }}">{{ ex.symbol|replace('.NS', '') }} {{ ex.change }}%</a>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <span class="text-muted small">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if item.exemplars %}
+                        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('compare') }}?{% for ex in item.exemplars %}s{{ loop.index }}={{ ex.symbol }}{% if not loop.last %}&{% endif %}{% endfor %}">Compare</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="table-light fw-semibold">
+                    <td>Total</td>
+                    <td class="text-end">{{ optimizer_summary.total_percent }}%</td>
+                    <td class="text-end">{{ optimizer_summary.total_amount_display }}</td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
