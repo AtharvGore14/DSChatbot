@@ -4,6 +4,8 @@ A Flask web app that combines a **financial-style dashboard**, **interactive dem
 
 **Repository:** [github.com/AtharvGore14/DSChatbot](https://github.com/AtharvGore14/DSChatbot)
 
+**Current branch:** `ChatBot_Import_JSON` — this branch includes the current workspace state and adds the JSON-based portfolio import/chatbot flow that is being worked on.
+
 ---
 
 ## Project overview
