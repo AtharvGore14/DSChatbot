@@ -1,0 +1,18 @@
+Daily Performance & P&L
+
+"Why is my portfolio red or green today?"
+"Which positions are dragging or lifting my portfolio today?"
+"What is my total profit and loss?"
+Holdings & Filters
+
+"What are my holdings from my import?"
+"Which of my holdings have a total return above 10%?"
+"Show me my current positions."
+Portfolio Allocation & Value
+
+"What is my sector breakdown and allocation?"
+"What is the total value or net worth of my portfolio?"
+Risk & Optimization
+
+"What does my risk radar or volatility profile look like?"
+"Optimise portfolio 100000 12 months medium" (You can specify budget, time horizon, and risk level!)

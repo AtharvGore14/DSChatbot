@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}Compare Stocks · FinPilot DS{% endblock %}
+{% block page_title %}Stock Comparison Lab{% endblock %}
+
+{% block head_extra %}
+<style>
+    .compare-kpi {
+        border-radius: 14px;
+        padding: 0.85rem 1rem;
+        border: 1px solid var(--stroke);
+        background: #fff;
+        height: 100%;
+        box-shadow: 0 6px 18px rgba(24, 52, 104, 0.05);
+    }
+    .compare-kpi small { color: var(--muted); display: block; margin-bottom: 0.25rem; }
+    .compare-kpi strong { font-size: 1.15rem; }
+    .compare-panel-title {
+        font-weight: 700;
+        font-size: 1rem;
+        margin-bottom: 0.35rem;
+    }
+    .compare-insight {
+        border-left: 4px solid var(--blue);
+        padding: 0.55rem 0.85rem;
+        background: #f4f8ff;
+        border-radius: 0 10px 10px 0;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+    .chart-frame {
+        min-height: 260px;
+        position: relative;
+    }
+    .chart-frame canvas { max-height: 260px; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.compareChartData = {{ compare_chart_data|tojson }};
+    window.compareMomentumChartData = {{ compare_momentum_chart_data|tojson }};
+    (function () {
+        const addBtn = document.getElementById("addCompareFieldBtn");
+        const removeBtn = document.getElementById("removeCompareFieldBtn");
+        const container = document.getElementById("compareFieldsContainer");
+        if (!addBtn || !removeBtn || !container) return;
+
+        function updateRemoveState() {
+            const visible = container.querySelectorAll(".compare-field:not(.d-none)").length;
+            removeBtn.disabled = visible <= 2;
+        }
+
+        addBtn.addEventListener("click", function () {
+            const hidden = container.querySelector(".compare-field.d-none");
+            if (hidden) {
+                hidden.classList.remove("d-none");
+                updateRemoveState();
+            }
+        });
+
+        removeBtn.addEventListener("click", function () {
+            const visibleFields = container.querySelectorAll(".compare-field:not(.d-none)");
+            if (visibleFields.length <= 2) {
+                updateRemoveState();
+                return;
+            }
+            const lastVisible = visibleFields[visibleFields.length - 1];
+            const select = lastVisible.querySelector("select");
+            if (select) {
+                select.value = "";
+            }
+            lastVisible.classList.add("d-none");
+            updateRemoveState();
+        });
+
+        updateRemoveState();
+    })();
+</script>
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+
+<p class="text-muted small mb-3">Compare up to eight symbols — your imported holdings appear first in the list; add catalog names if needed. KPIs and charts use your snapshot marks.</p>
+
+<div class="row g-3 mb-3">
+    <div class="col-12">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div>
+                    <h5 class="mb-1">Select symbols to compare</h5>
+                    <p class="small text-muted mb-0">Starts with two slots visible; add up to eight. Submit reloads metrics and charts.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button id="addCompareFieldBtn" type="button" class="btn btn-sm btn-outline-primary">+ Add Symbol</button>
+                    <button id="removeCompareFieldBtn" type="button" class="btn btn-sm btn-outline-primary">− Remove Symbol</button>
+                </div>
+            </div>
+            <form class="row g-2" method="get" action="{{ url_for('compare') }}">
+                <div id="compareFieldsContainer" class="row g-2 w-100 m-0">
+                    {% for i in range(8) %}
+                    {% set selected_symbol = selected[i] if i < selected|length else '' %}
+                    <div class="col-md-3 compare-field {% if i >= 2 and not selected_symbol %}d-none{% endif %}">
+                        <label class="form-label small text-muted mb-1">Slot {{ i + 1 }}</label>
+                        <select class="form-select" name="s{{ i + 1 }}" aria-label="Compare symbol {{ i + 1 }}">
+                            <option value="">Select stock</option>
+                            {% for symbol in all_symbols %}
+                            <option value="{{ symbol }}" {% if symbol == selected_symbol %}selected{% endif %}>{{ symbol }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="col-12 mt-2">
+                    <button type="submit" class="btn btn-gradient">Run comparison</button>
+                </div>
+            </form>
+            {% if invalid_symbols %}
+            <div class="alert alert-warning py-2 px-3 mt-3 mb-0 small">
+                <strong>Skipped invalid symbols:</strong> {{ invalid_symbols|join(', ') }} — use the coursework catalog or a symbol from your imported portfolio.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-xl-2">
+        <div class="compare-kpi">
+            <small>Symbols compared</small>
+            <strong>{{ compared|length }}</strong>
+        </div>
+    </div>
+    <div class="col-6 col-xl-2">
+        <div class="compare-kpi">
+            <small>Average price</small>
+            <strong>₹ {{ avg_price }}</strong>
+        </div>
+    </div>
+    <div class="col-6 col-xl-2">
+        <div class="compare-kpi">
+            <small>Average change</small>
+            <strong class="{{ 'text-success' if avg_change >= 0 else 'text-danger' }}">{{ avg_change }}%</strong>
+        </div>
+    </div>
+    <div class="col-6 col-xl-2">
+        <div class="compare-kpi">
+            <small>Best momentum</small>
+            <strong class="text-truncate d-block">{{ best_stock.symbol if best_stock else '—' }}</strong>
+        </div>
+    </div>
+    <div class="col-6 col-xl-2">
+        <div class="compare-kpi">
+            <small>Weakest momentum</small>
+            <strong class="text-truncate d-block">{{ worst_stock.symbol if worst_stock else '—' }}</strong>
+        </div>
+    </div>
+    <div class="col-6 col-xl-2">
+        <div class="compare-kpi">
+            <small>Adv / Dec / Flat</small>
+            <strong>{{ advance_ct }} / {{ decline_ct }} / {{ flat_ct }}</strong>
+        </div>
+    </div>
+</div>
+
+{% if compare_insights %}
+<div class="glass-card p-4 mb-3">
+    <p class="compare-panel-title mb-3">Summary</p>
+    {% for line in compare_insights %}
+    <div class="compare-insight">{{ line }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-6">
+        <div class="glass-card p-3 premium-panel h-100">
+            <h5 class="mb-2">Price vs daily change (grouped bars)</h5>
+            <p class="small text-muted mb-3">Sorted by momentum (strongest first).</p>
+            <div class="chart-frame">
+                <canvas id="compareChart" height="240"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-3 premium-panel h-100">
+            <h5 class="mb-2">Momentum ranking (horizontal bars)</h5>
+            <p class="small text-muted mb-3">Green / red by positive vs negative change.</p>
+            <div class="chart-frame">
+                <canvas id="compareMomentumChart" height="240"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="glass-card p-4 mb-3">
+    <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+        <div>
+            <h5 class="mb-1">Detailed peer table</h5>
+            <p class="small text-muted mb-0">Sector labels and “vs avg” columns use the cohort mean.</p>
+        </div>
+        <span class="badge badge-soft align-self-start">{{ compare_rows|length }} rows</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Rank</th>
+                    <th scope="col">Symbol</th>
+                    <th scope="col">Sector</th>
+                    <th scope="col" class="text-end">Price (₹)</th>
+                    <th scope="col" class="text-end">vs avg price</th>
+                    <th scope="col" class="text-end">Change %</th>
+                    <th scope="col" class="text-end">vs avg Δ</th>
+                    <th scope="col" class="text-end">Composite</th>
+                    <th scope="col">Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in compare_rows %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ row.symbol }}</strong></td>
+                    <td><span class="badge rounded-pill badge-soft">{{ row.sector }}</span></td>
+                    <td class="text-end">{{ row.price }}</td>
+                    <td class="text-end {{ 'text-success' if row.vs_avg_price_pct >= 0 else 'text-danger' }}">{{ row.vs_avg_price_pct }}%</td>
+                    <td class="text-end {{ 'text-success' if row.change >= 0 else 'text-danger' }}">{{ row.change }}%</td>
+                    <td class="text-end {{ 'text-success' if row.vs_avg_change >= 0 else 'text-danger' }}">{{ row.vs_avg_change }}%</td>
+                    <td class="text-end">{{ row.composite_score }}</td>
+                    <td><a class="btn btn-sm btn-outline-primary" href="{{ url_for('analysis', symbol=row.symbol) }}">Analysis</a></td>
+                </tr>
+                {% endfor %}
+                {% if not compare_rows %}
+                <tr>
+                    <td colspan="9" class="text-secondary py-4 text-center">
+                        No valid rows yet — choose symbols above and click <strong>Run comparison</strong>.
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

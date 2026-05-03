@@ -1,0 +1,844 @@
+{% extends "base.html" %}
+{% block title %}Data Structures Lab · FinPilot DS{% endblock %}
+{% block page_title %}Data Structures Lab{% endblock %}
+
+{% block head_extra %}
+<style>
+    .studio-shell {
+        display: grid;
+        grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+        gap: 1.25rem;
+        align-items: start;
+        max-width: 1320px;
+        margin: 0 auto;
+    }
+    .studio-card {
+        border-radius: 16px;
+        padding: 1.15rem 1.25rem;
+    }
+    .studio-sidebar {
+        position: sticky;
+        top: 0.75rem;
+    }
+    .studio-hero {
+        background: linear-gradient(145deg, #f8fbff 0%, #eef4ff 48%, #ffffff 100%);
+        border-color: #dbe7ff !important;
+    }
+    .studio-sidebar h5 {
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+    .studio-steps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    .studio-step {
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        padding: 0.25rem 0.55rem;
+        border-radius: 999px;
+        background: rgba(24, 117, 240, 0.08);
+        border: 1px solid rgba(24, 117, 240, 0.15);
+    }
+    .studio-sidebar-section {
+        margin-bottom: 1rem;
+    }
+    .studio-sidebar-section label {
+        font-weight: 600;
+        font-size: 0.82rem;
+        color: var(--text);
+    }
+    .studio-sidebar-hint {
+        font-size: 0.72rem;
+        color: var(--muted);
+        margin-top: 0.25rem;
+        line-height: 1.35;
+    }
+    .studio-grid {
+        display: grid;
+        gap: 1.15rem;
+    }
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.65rem;
+    }
+    .kpi {
+        border: 1px solid var(--stroke);
+        background: linear-gradient(165deg, #ffffff 0%, #f7faff 100%);
+        border-radius: 12px;
+        padding: 0.75rem 0.85rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .kpi:hover {
+        border-color: #dbe7fb;
+        box-shadow: 0 6px 18px rgba(36, 74, 144, 0.06);
+    }
+    .kpi small {
+        display: block;
+        color: var(--muted);
+        margin-bottom: 0.3rem;
+        font-size: 0.68rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .kpi strong {
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+    .sort-bars {
+        min-height: 200px;
+        border: 1px solid var(--stroke);
+        border-radius: 14px;
+        background: linear-gradient(180deg, #ffffff 0%, #f4f8ff 100%);
+        display: flex;
+        align-items: flex-end;
+        gap: 0.5rem;
+        padding: 1rem 1rem 0.85rem;
+        overflow-x: auto;
+    }
+    .sort-bar {
+        flex: 0 0 38px;
+        min-height: 18px;
+        border-radius: 10px 10px 4px 4px;
+        background: linear-gradient(180deg, #5eb0ff 0%, #1875f0 55%, #0a55c0 100%);
+        color: #fff;
+        font-size: 0.74rem;
+        font-weight: 700;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 0.25rem;
+        box-shadow: 0 4px 12px rgba(24, 117, 240, 0.25);
+        transition: transform 0.15s ease;
+    }
+    .sort-bar:hover {
+        transform: translateY(-2px);
+    }
+    .toolbar-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        align-items: center;
+        padding: 0.65rem 0.85rem;
+        border-radius: 12px;
+        background: #f4f8ff;
+        border: 1px solid #e4ecfb;
+        margin-bottom: 0.85rem;
+    }
+    .toolbar-strip .speed-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+    .toolbar-strip input[type="range"] {
+        width: 120px;
+        accent-color: var(--blue);
+    }
+    .mono-out {
+        margin: 0;
+        font-family: ui-monospace, "Consolas", monospace;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        padding: 0.65rem 0.85rem;
+        border-radius: 10px;
+        background: #0f172a;
+        color: #e2e8f0;
+        word-break: break-word;
+    }
+    .ds-panel-grid {
+        display: grid;
+        gap: 1rem;
+    }
+    @media (min-width: 992px) {
+        .ds-panel-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        .ds-panel-span {
+            grid-column: 1 / -1;
+        }
+    }
+    .ds-panel {
+        border-radius: 14px;
+        padding: 1rem;
+        border: 1px solid var(--stroke);
+        background: #fff;
+        height: 100%;
+        box-shadow: 0 6px 20px rgba(21, 49, 98, 0.05);
+        border-left-width: 4px;
+        display: flex;
+        flex-direction: column;
+    }
+    .ds-panel--trie { border-left-color: #1875f0; }
+    .ds-panel--avl { border-left-color: #16a34a; }
+    .ds-panel--graph { border-left-color: #7c3aed; }
+    .ds-panel-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.65rem;
+    }
+    .ds-panel-head .title {
+        font-weight: 700;
+        font-size: 0.92rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
+    .ds-panel-head .title i {
+        opacity: 0.85;
+        font-size: 0.95rem;
+    }
+    .ds-panel-controls {
+        margin-bottom: 0.65rem;
+    }
+    .ds-panel-controls .form-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        color: var(--text);
+    }
+    .ds-panel-controls .form-control,
+    .ds-panel-controls .form-select {
+        font-size: 0.85rem;
+    }
+    .ds-panel-controls .studio-sidebar-hint {
+        margin-top: 0.2rem;
+    }
+    .ds-panel-body {
+        flex: 1;
+        min-height: 52px;
+        margin-bottom: 0.75rem;
+    }
+    .chip-area {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        align-items: center;
+        min-height: 40px;
+    }
+    .chip {
+        border: 1px solid #c8dbff;
+        background: linear-gradient(180deg, #f8fbff, #edf4ff);
+        color: #1557b5;
+        border-radius: 999px;
+        padding: 0.28rem 0.72rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+    .node-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        min-height: 44px;
+    }
+    .node-pill {
+        min-width: 42px;
+        height: 42px;
+        border-radius: 11px;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        font-size: 0.82rem;
+        background: linear-gradient(165deg, #4ade80, #16a34a);
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+    }
+    .graph-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        align-items: center;
+        min-height: 44px;
+    }
+    .graph-node {
+        border: 1px solid #ddd6fe;
+        border-radius: 999px;
+        background: linear-gradient(180deg, #faf5ff, #f3e8ff);
+        color: #5b21b6;
+        padding: 0.28rem 0.72rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .arrow {
+        color: #8b5cf6;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+    .arena-head {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.65rem;
+        margin-bottom: 0.75rem;
+    }
+    .arena-head h6 {
+        font-weight: 700;
+        margin: 0;
+        font-size: 1rem;
+    }
+    @media (max-width: 1080px) {
+        .studio-shell { grid-template-columns: 1fr; }
+        .studio-sidebar { position: static; }
+        .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 680px) {
+        .kpi-grid { grid-template-columns: 1fr; }
+        .toolbar-strip .speed-wrap {
+            margin-left: 0;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="studio-shell">
+    <section class="glass-card studio-card studio-sidebar studio-hero">
+        <div class="studio-steps">
+            <span class="studio-step">1 · Configure</span>
+            <span class="studio-step">2 · Sort</span>
+            <span class="studio-step">3 · Reveal</span>
+        </div>
+        <h5 class="mb-2"><i class="fa-solid fa-flask-vial me-2 text-primary"></i>Lab console</h5>
+        <p class="text-muted small mb-3 mb-lg-4"><strong>1–2:</strong> Enter numbers and sort here, then <strong>Run pipeline</strong>. <strong>3:</strong> Trie prefix and graph traversal sit beside their panels — reveal when ready.</p>
+        <form id="studioForm" class="d-grid gap-3">
+            <div class="studio-sidebar-section">
+                <label for="numsInput" class="form-label">Numbers</label>
+                <input id="numsInput" class="form-control font-monospace" autocomplete="off" spellcheck="false"
+                       value="{{ nums or '8,3,5,1,9' }}" placeholder="e.g. 8,3,5,1,9">
+                <div class="studio-sidebar-hint">Comma-separated integers — drives bars, trace length, and AVL.</div>
+            </div>
+            <div class="studio-sidebar-section mb-0">
+                <label for="algoInput" class="form-label">Sort algorithm</label>
+                <select id="algoInput" class="form-select">
+                    <option value="merge" {% if algo == 'merge' %}selected{% endif %}>Merge sort</option>
+                    <option value="quick" {% if algo == 'quick' %}selected{% endif %}>Quick sort</option>
+                    <option value="heap" {% if algo == 'heap' %}selected{% endif %}>Heap sort</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-gradient mt-1"><i class="fa-solid fa-play me-2"></i>Run pipeline</button>
+        </form>
+    </section>
+
+    <section class="studio-grid">
+        <div class="glass-card studio-card py-3">
+            <div class="kpi-grid">
+                <div class="kpi"><small>Values</small><strong id="kpiCount">0</strong></div>
+                <div class="kpi"><small>Sort</small><strong id="kpiSort" class="kpi-tone">Idle</strong></div>
+                <div class="kpi"><small>Graph</small><strong id="kpiGraph" class="kpi-tone">Idle</strong></div>
+                <div class="kpi"><small>Trace steps</small><strong id="kpiSteps">0</strong></div>
+            </div>
+        </div>
+
+        <div class="glass-card studio-card">
+            <div class="arena-head">
+                <div>
+                    <h6><i class="fa-solid fa-chart-column me-2 text-primary"></i>Sort arena</h6>
+                    <p class="small text-muted mb-0 mt-1">Bars start unsorted — use <strong>Play trace</strong> for the bubble-style animation (same ordering as your numbers).</p>
+                </div>
+                <span class="badge badge-soft align-self-start" id="sortArenaBadge">Waiting for run</span>
+            </div>
+            <div class="toolbar-strip">
+                <button type="button" class="btn btn-primary btn-sm" id="playTraceBtn"><i class="fa-solid fa-forward me-1"></i>Play trace</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="resetTraceBtn">Reset bars</button>
+                <div class="speed-wrap">
+                    <label for="traceSpeed" class="small text-muted mb-0 text-nowrap">Delay</label>
+                    <input id="traceSpeed" type="range" min="120" max="900" step="60" value="360" aria-valuetext="360ms">
+                    <span class="small text-muted font-monospace" id="traceSpeedLabel">360ms</span>
+                </div>
+            </div>
+            <div id="sortBars" class="sort-bars"></div>
+            <div class="mt-3">
+                <div class="small text-muted mb-2 fw-semibold">Sorted output</div>
+                <p id="sortedOutput" class="mono-out">Waiting for run…</p>
+            </div>
+        </div>
+
+        <div class="glass-card studio-card">
+            <div class="mb-3">
+                <h6 class="mb-1 fw-bold"><i class="fa-solid fa-layer-group me-2 text-primary"></i>Data structure panels</h6>
+                <p class="small text-muted mb-0">Reveal each view on demand — nothing loads until you click.</p>
+            </div>
+            <div class="ds-panel-grid">
+                <div class="ds-panel ds-panel--trie">
+                    <div class="ds-panel-head">
+                        <p class="title mb-0"><i class="fa-solid fa-font"></i>Trie</p>
+                    </div>
+                    <div class="ds-panel-controls">
+                        <label for="triePrefixInput" class="form-label">Trie prefix</label>
+                        <input id="triePrefixInput" class="form-control font-monospace text-uppercase" maxlength="12" value="RE" placeholder="RE" autocomplete="off">
+                        <div class="studio-sidebar-hint">Uppercase — filters symbol matches when you reveal.</div>
+                    </div>
+                    <div id="trieArea" class="ds-panel-body chip-area">
+                        <span class="small text-muted">Run a sort first, then reveal.</span>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm align-self-start" id="revealTrieBtn" disabled>Show matches</button>
+                </div>
+                <div class="ds-panel ds-panel--avl">
+                    <div class="ds-panel-head">
+                        <p class="title mb-0"><i class="fa-solid fa-tree"></i>AVL inorder</p>
+                    </div>
+                    <div id="avlArea" class="ds-panel-body node-grid">
+                        <span class="small text-muted">Uses the numbers from your last run.</span>
+                    </div>
+                    <button type="button" class="btn btn-outline-success btn-sm align-self-start" id="revealAvlBtn" disabled>Show inorder</button>
+                </div>
+                <div class="ds-panel ds-panel--graph ds-panel-span">
+                    <div class="ds-panel-head">
+                        <p class="title mb-0"><i class="fa-solid fa-diagram-project"></i>Graph flow</p>
+                    </div>
+                    <div class="ds-panel-controls">
+                        <label for="graphAlgoInput" class="form-label">Graph traversal</label>
+                        <select id="graphAlgoInput" class="form-select">
+                            <option value="bfs" {% if graph_algo == 'bfs' %}selected{% endif %}>BFS</option>
+                            <option value="dfs" {% if graph_algo == 'dfs' %}selected{% endif %}>DFS</option>
+                            <option value="dijkstra" {% if graph_algo == 'dijkstra' %}selected{% endif %}>Dijkstra</option>
+                        </select>
+                        <div class="studio-sidebar-hint">Start node IT — applied when you reveal traversal.</div>
+                    </div>
+                    <div id="graphArea" class="ds-panel-body graph-line">
+                        <span class="small text-muted">Choose traversal above, then reveal.</span>
+                    </div>
+                    <button type="button" class="btn btn-sm align-self-start text-white" style="background: linear-gradient(90deg, #7c3aed, #5b21b6); border: none;" id="revealGraphBtn" disabled>Show traversal</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(() => {
+    const form = document.getElementById("studioForm");
+    const numsInput = document.getElementById("numsInput");
+    const algoInput = document.getElementById("algoInput");
+    const triePrefixInput = document.getElementById("triePrefixInput");
+    const playTraceBtn = document.getElementById("playTraceBtn");
+    const resetTraceBtn = document.getElementById("resetTraceBtn");
+    const traceSpeed = document.getElementById("traceSpeed");
+    const traceSpeedLabel = document.getElementById("traceSpeedLabel");
+    const sortArenaBadge = document.getElementById("sortArenaBadge");
+    const sortBars = document.getElementById("sortBars");
+    const sortedOutput = document.getElementById("sortedOutput");
+    const trieArea = document.getElementById("trieArea");
+    const avlArea = document.getElementById("avlArea");
+    const graphArea = document.getElementById("graphArea");
+    const revealTrieBtn = document.getElementById("revealTrieBtn");
+    const revealAvlBtn = document.getElementById("revealAvlBtn");
+    const revealGraphBtn = document.getElementById("revealGraphBtn");
+    const kpiCount = document.getElementById("kpiCount");
+    const kpiSort = document.getElementById("kpiSort");
+    const kpiGraph = document.getElementById("kpiGraph");
+    const kpiSteps = document.getElementById("kpiSteps");
+
+    let lastInput = [];
+    let frames = [];
+    let sortedValues = [];
+    let traceTimer = null;
+    let hasRun = false;
+    let numsCsvForAvl = "";
+    let dsRevealReady = false;
+
+    const BTN_TRIE = "Show matches";
+    const BTN_AVL = "Show inorder";
+    const BTN_GRAPH = "Show traversal";
+
+    function toneKpi(el, tone) {
+        el.classList.remove("text-success", "text-danger", "text-warning", "text-primary", "text-muted");
+        if (tone === "success") {
+            el.classList.add("text-success");
+        } else if (tone === "danger") {
+            el.classList.add("text-danger");
+        } else if (tone === "warn") {
+            el.classList.add("text-warning");
+        } else if (tone === "info") {
+            el.classList.add("text-primary");
+        } else {
+            el.classList.add("text-muted");
+        }
+    }
+
+    function syncTraceSpeedLabel() {
+        const ms = Number(traceSpeed.value) || 360;
+        traceSpeedLabel.textContent = `${ms}ms`;
+        traceSpeed.setAttribute("aria-valuetext", `${ms}ms`);
+    }
+
+    traceSpeed.addEventListener("input", syncTraceSpeedLabel);
+    syncTraceSpeedLabel();
+
+    function setArenaBadge(text, variant) {
+        sortArenaBadge.textContent = text;
+        const extra = variant === "ok" ? "text-bg-success"
+            : variant === "run" ? "text-bg-primary"
+                : variant === "warn" ? "text-bg-warning"
+                    : "badge-soft";
+        sortArenaBadge.className = `badge align-self-start ${extra}`;
+    }
+
+    function setRevealButtonsEnabled(on) {
+        dsRevealReady = on;
+        revealTrieBtn.disabled = !on;
+        revealAvlBtn.disabled = !on;
+        revealGraphBtn.disabled = !on;
+    }
+
+    function resetPanelCopiesIdle() {
+        trieArea.innerHTML = "<span class='small text-muted'>Run a sort first, then reveal.</span>";
+        avlArea.innerHTML = "<span class='small text-muted'>Uses the numbers from your last run.</span>";
+        graphArea.innerHTML = "<span class='small text-muted'>Run a sort first, then pick traversal above and reveal.</span>";
+    }
+
+    function resetRevealButtonLabels() {
+        revealTrieBtn.textContent = BTN_TRIE;
+        revealAvlBtn.textContent = BTN_AVL;
+        revealGraphBtn.textContent = BTN_GRAPH;
+    }
+
+    function setPanelHintsReady() {
+        trieArea.innerHTML = "<span class='small text-muted'>Adjust prefix above if needed, then reveal.</span>";
+        avlArea.innerHTML = "<span class='small text-muted'>Built from your current number list.</span>";
+        graphArea.innerHTML = "<span class='small text-muted'>Switch traversal above if you want, then reveal.</span>";
+    }
+
+    function parseNumbers(raw) {
+        return raw
+            .split(",")
+            .map((part) => Number(part.trim()))
+            .filter((value) => Number.isFinite(value));
+    }
+
+    function traceFrames(values) {
+        const arr = [...values];
+        const output = [[...arr]];
+        for (let i = 0; i < arr.length; i += 1) {
+            for (let j = 0; j < arr.length - i - 1; j += 1) {
+                if (arr[j] > arr[j + 1]) {
+                    const temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+                    output.push([...arr]);
+                }
+            }
+        }
+        return output;
+    }
+
+    function drawBars(values) {
+        sortBars.innerHTML = "";
+        if (!values.length) {
+            sortBars.innerHTML = "<span class='small text-muted px-2'>No data.</span>";
+            return;
+        }
+        const peak = Math.max(...values, 1);
+        values.forEach((value) => {
+            const bar = document.createElement("div");
+            bar.className = "sort-bar";
+            bar.style.height = `${Math.max(18, (value / peak) * 168)}px`;
+            bar.textContent = String(value);
+            sortBars.appendChild(bar);
+        });
+    }
+
+    function renderTrie(items) {
+        trieArea.innerHTML = "";
+        if (!Array.isArray(items) || !items.length) {
+            trieArea.innerHTML = "<span class='small text-muted'>No prefix matches.</span>";
+            return;
+        }
+        items.slice(0, 14).forEach((item) => {
+            const chip = document.createElement("span");
+            chip.className = "chip";
+            chip.textContent = String(item);
+            trieArea.appendChild(chip);
+        });
+    }
+
+    function renderAvl(items) {
+        avlArea.innerHTML = "";
+        if (!Array.isArray(items) || !items.length) {
+            avlArea.innerHTML = "<span class='small text-muted'>No AVL nodes.</span>";
+            return;
+        }
+        items.forEach((item) => {
+            const node = document.createElement("div");
+            node.className = "node-pill";
+            node.textContent = String(item);
+            avlArea.appendChild(node);
+        });
+    }
+
+    function renderGraph(result) {
+        graphArea.innerHTML = "";
+        if (Array.isArray(result)) {
+            if (!result.length) {
+                graphArea.innerHTML = "<span class='small text-muted'>Empty traversal — try another algorithm.</span>";
+                return;
+            }
+            result.forEach((node, index) => {
+                const chip = document.createElement("span");
+                chip.className = "graph-node";
+                chip.textContent = String(node);
+                graphArea.appendChild(chip);
+                if (index < result.length - 1) {
+                    const arrow = document.createElement("span");
+                    arrow.className = "arrow";
+                    arrow.textContent = "→";
+                    graphArea.appendChild(arrow);
+                }
+            });
+            return;
+        }
+        if (result && typeof result === "object") {
+            const entries = Object.entries(result);
+            if (!entries.length) {
+                graphArea.innerHTML = "<span class='small text-muted'>No distance data returned.</span>";
+                return;
+            }
+            entries.forEach(([key, value]) => {
+                const chip = document.createElement("span");
+                chip.className = "graph-node";
+                chip.textContent = `${key}:${value}`;
+                graphArea.appendChild(chip);
+            });
+            return;
+        }
+        graphArea.innerHTML = "<span class='small text-muted'>Graph output unavailable.</span>";
+    }
+
+    async function getJson(url) {
+        const response = await fetch(url, { credentials: "same-origin", cache: "no-store" });
+        let data;
+        try {
+            data = await response.json();
+        } catch (_) {
+            throw new Error("Bad response from server");
+        }
+        if (!response.ok || data.status !== "ok") {
+            throw new Error(data.message || `Request failed (${response.status})`);
+        }
+        return data;
+    }
+
+    function resetVisualState() {
+        hasRun = false;
+        numsCsvForAvl = "";
+        lastInput = [];
+        frames = [];
+        sortedValues = [];
+        if (traceTimer) {
+            clearInterval(traceTimer);
+            traceTimer = null;
+        }
+        kpiCount.textContent = "0";
+        kpiSort.textContent = "Idle";
+        kpiGraph.textContent = "Idle";
+        toneKpi(kpiSort, "muted");
+        toneKpi(kpiGraph, "muted");
+        kpiSteps.textContent = "0";
+        sortedOutput.textContent = "Waiting for run…";
+        drawBars([]);
+        resetPanelCopiesIdle();
+        resetRevealButtonLabels();
+        setRevealButtonsEnabled(false);
+        setArenaBadge("Waiting for run", "muted");
+    }
+
+    function playTrace() {
+        if (!hasRun || !frames.length) {
+            return;
+        }
+        if (traceTimer) {
+            clearInterval(traceTimer);
+        }
+        setArenaBadge("Playing trace…", "run");
+        let cursor = 0;
+        const speed = Number(traceSpeed.value) || 360;
+        traceTimer = setInterval(() => {
+            drawBars(frames[cursor]);
+            cursor += 1;
+            if (cursor >= frames.length) {
+                clearInterval(traceTimer);
+                traceTimer = null;
+                drawBars(sortedValues.length ? sortedValues : frames[frames.length - 1]);
+                setArenaBadge("Trace complete", "ok");
+            }
+        }, speed);
+    }
+
+    function resetBarsToInput() {
+        if (!lastInput.length) {
+            return;
+        }
+        if (traceTimer) {
+            clearInterval(traceTimer);
+            traceTimer = null;
+        }
+        drawBars(lastInput);
+        setArenaBadge("Bars reset — play again", "muted");
+    }
+
+    async function runLabPipeline() {
+        const nums = parseNumbers(numsInput.value);
+        kpiCount.textContent = String(nums.length);
+
+        if (!nums.length) {
+            toneKpi(kpiSort, "danger");
+            toneKpi(kpiGraph, "danger");
+            kpiSort.textContent = "Invalid";
+            kpiGraph.textContent = "—";
+            kpiSteps.textContent = "0";
+            sortedOutput.textContent = "Enter comma-separated numbers, e.g. 8, 3, 5, 1, 9";
+            drawBars([]);
+            numsCsvForAvl = "";
+            resetPanelCopiesIdle();
+            resetRevealButtonLabels();
+            setRevealButtonsEnabled(false);
+            hasRun = false;
+            setArenaBadge("Fix input", "warn");
+            return;
+        }
+
+        hasRun = true;
+        lastInput = [...nums];
+        numsCsvForAvl = nums.join(",");
+        frames = traceFrames(nums);
+        kpiSteps.textContent = String(Math.max(0, frames.length - 1));
+        toneKpi(kpiSort, "warn");
+        toneKpi(kpiGraph, "info");
+        kpiSort.textContent = "Running…";
+        kpiGraph.textContent = "Await reveal";
+        drawBars(nums);
+        resetRevealButtonLabels();
+        setRevealButtonsEnabled(false);
+        setPanelHintsReady();
+        setArenaBadge("Sort running…", "run");
+
+        const sortUrl = `/api/ds/sort?algo=${encodeURIComponent(algoInput.value)}&data=${encodeURIComponent(numsCsvForAvl)}`;
+
+        try {
+            const sortData = await getJson(sortUrl);
+
+            if (Array.isArray(sortData.sorted)) {
+                sortedValues = sortData.sorted;
+            } else if (Array.isArray(sortData.result)) {
+                sortedValues = sortData.result;
+            } else {
+                sortedValues = [...nums].sort((a, b) => a - b);
+            }
+
+            sortedOutput.textContent = `[ ${sortedValues.join(", ")} ]`;
+            kpiSort.textContent = "Ready";
+            toneKpi(kpiSort, "success");
+            toneKpi(kpiGraph, "info");
+            kpiGraph.textContent = "Await reveal";
+            drawBars(nums);
+            setRevealButtonsEnabled(true);
+            setArenaBadge("Ready — play trace or reveal panels", "ok");
+        } catch (error) {
+            sortedOutput.textContent = "Sort engine unavailable — check backend / ds_engine.";
+            toneKpi(kpiSort, "danger");
+            toneKpi(kpiGraph, "muted");
+            kpiSort.textContent = "Failed";
+            kpiGraph.textContent = "Idle";
+            resetPanelCopiesIdle();
+            resetRevealButtonLabels();
+            setRevealButtonsEnabled(false);
+            hasRun = false;
+            setArenaBadge("Sort failed", "warn");
+        }
+    }
+
+    revealTrieBtn.addEventListener("click", async () => {
+        if (!dsRevealReady) {
+            return;
+        }
+        const prefix = String(triePrefixInput.value || "RE").trim().toUpperCase().slice(0, 10) || "RE";
+        revealTrieBtn.disabled = true;
+        revealTrieBtn.innerHTML = "<span class='spinner-border spinner-border-sm me-1'></span> Loading";
+        try {
+            const trieData = await getJson(`/api/ds/trie?prefix=${encodeURIComponent(prefix)}`);
+            renderTrie(trieData.suggestions || []);
+            revealTrieBtn.textContent = "Refresh trie";
+        } catch (error) {
+            renderTrie([]);
+            revealTrieBtn.textContent = BTN_TRIE;
+        } finally {
+            revealTrieBtn.disabled = !dsRevealReady;
+        }
+    });
+
+    revealAvlBtn.addEventListener("click", async () => {
+        if (!dsRevealReady || !numsCsvForAvl) {
+            return;
+        }
+        revealAvlBtn.disabled = true;
+        revealAvlBtn.innerHTML = "<span class='spinner-border spinner-border-sm me-1'></span> Loading";
+        try {
+            const avlData = await getJson(`/api/ds/avl?data=${encodeURIComponent(numsCsvForAvl)}`);
+            renderAvl(avlData.inorder || []);
+            revealAvlBtn.textContent = "Refresh AVL";
+        } catch (error) {
+            renderAvl([]);
+            revealAvlBtn.textContent = BTN_AVL;
+        } finally {
+            revealAvlBtn.disabled = !dsRevealReady;
+        }
+    });
+
+    revealGraphBtn.addEventListener("click", async () => {
+        if (!dsRevealReady) {
+            return;
+        }
+        const algoSelect = document.getElementById("graphAlgoInput");
+        const algo = (algoSelect && algoSelect.value ? algoSelect.value : "bfs").trim().toLowerCase();
+        revealGraphBtn.disabled = true;
+        revealGraphBtn.innerHTML = "<span class='spinner-border spinner-border-sm me-1'></span> Loading";
+        try {
+            const graphData = await getJson(
+                `/api/ds/graph?algo=${encodeURIComponent(algo)}&start=IT`,
+            );
+            const graphPayload =
+                graphData.traversal
+                ?? graphData.distance
+                ?? graphData.result
+                ?? null;
+            renderGraph(graphPayload);
+            kpiGraph.textContent = "Shown";
+            toneKpi(kpiGraph, "success");
+            revealGraphBtn.textContent = "Refresh graph";
+        } catch (error) {
+            renderGraph(null);
+            kpiGraph.textContent = "Await reveal";
+            toneKpi(kpiGraph, "info");
+            revealGraphBtn.textContent = BTN_GRAPH;
+        } finally {
+            revealGraphBtn.disabled = !dsRevealReady;
+        }
+    });
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        runLabPipeline();
+    });
+    playTraceBtn.addEventListener("click", playTrace);
+    resetTraceBtn.addEventListener("click", resetBarsToInput);
+
+    resetVisualState();
+})();
+</script>
+{% endblock %}

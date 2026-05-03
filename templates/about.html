@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}About · FinPilot DS{% endblock %}
+{% block page_title %}About Project{% endblock %}
+{% block content %}
+<div class="glass-card p-4">
+    <h4 class="mb-3">Project Vision</h4>
+    <p>
+        FinPilot DS applies practical data structures in a full-stack financial intelligence simulation.
+        Flask powers the web layer while a high-performance C++ engine handles core algorithmic workloads.
+    </p>
+    <div class="row g-3 mt-1">
+        <div class="col-md-6">
+            <div class="p-3 panel-soft h-100">
+                <h6>Academic Scope</h6>
+                <p class="small mb-0 text-secondary">AVL, Trie, Heap, Graph, Hash Table, BST, Stack, Queue, and sorting/searching algorithms.</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-3 panel-soft h-100">
+                <h6>Product Scope</h6>
+                <p class="small mb-0 text-secondary">Stock analysis, portfolio optimization, watchlist, chatbot, and algorithms laboratory.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

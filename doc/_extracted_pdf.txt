@@ -1,0 +1,30 @@
+Finance Portfolio Chatbot – System Architecture
+UIGatewayNLURetrievalLLMData
+User interfaceWeb / mobile chat · "What is my current portfolio value?"
+Auth & rate limiterJWT · user scoping Session managerConversation history · context window
+Intent classifierHoldings · P&L · risk · allocation Entity extractorTicker · date range · account Scope guardReject out-of-portfolio queries
+Retrieval engine (RAG)
+Query builderStructured filtersuser_id + date+ asset class
+Vector searchSemantic similarityon embeddings(portfolio chunks)
+Context assemblerRank & merge chunksInject user metadataBuild prompt context
+LLM inferenceSystem prompt enforces portfolio-only scope · No external web / market data allowed
+Guardrail filterBlock hallucinated tickers / prices Response formatterTables · charts · citations
+Data layer (portfolio-scoped, no external feeds)
+Holdings DBPositions, lotscost basis
+Transactions DBBuy / sell historydividends
+Snapshot storeEOD valuationsP&L history
+Vector DBEmbeddedchunks
+Here's a comprehensive architecture for a RAG-based portfolio Q&A chatbot (similar to Rufus, but scoped to personal/institutional finance portfolios):Here's abreakdown of each layer and the key design decisions that keep the chatbot strictly within the user's portfolio:
+User interface — standard chat surface (web or mobile). Nothing special here, but every request carries the authenticated user's identity token.
+portfolio chatbot system overview
+1 / 2
+
+API gateway — two jobs: (1) authenticate the user and enforce rate limits; (2) attach the conversation history so the LLM always has context about what's beenasked before. Both components enforce user-level scoping at the earliest possible point.
+NLU layer — this is where the "scope guard" lives, which is the most important component for a portfolio-only bot. It classifies the intent (holdings query, P&L, risk,allocation), extracts entities (ticker symbols, date ranges, account IDs), and then hard-rejects any query that falls outside portfolio scope before it ever reaches theretrieval layer.
+Retrieval engine (RAG) — three-stage pipeline:
+LLM inference — the system prompt is the second enforcement layer: it explicitly instructs the model that it has no access to external market data, news feeds, oranything outside the injected context. This prevents the LLM from using its training knowledge to answer "what's Apple's stock price today."
+Guardrail filter + formatter — the output is checked to catch hallucinated ticker prices or positions that don't appear in the source data, then formatted into tables,charts, or plain text with citations pointing back to the portfolio records.
+Data layer — four stores, all portfolio-scoped and user-isolated: a holdings DB (current positions, cost basis), a transactions DB (buy/sell history, dividends), asnapshot store (end-of-day valuations for P&L queries), and a vector DB containing pre-embedded chunks of the user's portfolio data for semantic search.
+The query builder converts parsed intent + entities into structured filters (user_id, date, asset class)Vector search finds semantically similar chunks from the user's embedded portfolio documentsThe context assembler ranks and merges the retrieved chunks into the final prompt context
+portfolio chatbot system overview
+2 / 2

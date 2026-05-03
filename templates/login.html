@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Login · FinPilot DS{% endblock %}
+{% block page_title %}Login{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show mb-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="glass-card auth-card p-4">
+            <div class="auth-card-brand">
+                <img class="auth-card-logo" src="{{ url_for('static', filename='img/finpilot-logo.svg') }}" width="56" height="56" alt="" decoding="async">
+                <div class="auth-card-headings">
+                    <h4 class="auth-card-title">Welcome Back</h4>
+                    <p class="auth-card-lead text-muted small">Use the email and password you registered (stored in SQLite).</p>
+                </div>
+            </div>
+            <form method="post" action="{{ url_for('login') }}" class="auth-card-form" autocomplete="on">
+                {% if login_next_path %}
+                <input type="hidden" name="next" value="{{ login_next_path }}">
+                {% endif %}
+                <div class="mb-3">
+                    <label class="form-label" for="login-email">Email</label>
+                    <input type="email" class="form-control" id="login-email" name="email" required
+                           placeholder="you@example.com" autocomplete="username">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="login-password">Password</label>
+                    <input type="password" class="form-control" id="login-password" name="password" required
+                           placeholder="••••••••" autocomplete="current-password" minlength="{{ auth_min_password }}">
+                </div>
+                <button type="submit" class="btn btn-gradient w-100">Sign In</button>
+            </form>
+            <p class="small text-muted text-center mt-3 mb-0">
+                No account? <a href="{{ url_for('register') }}">Create one</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

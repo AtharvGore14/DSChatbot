@@ -1,0 +1,4 @@
+#!/bin/sh
+# Optional: remove extra Co-authored-by lines before the commit is recorded.
+ROOT="$(git rev-parse --show-toplevel)"
+exec python "$ROOT/scripts/strip_coauthor_trailers.py" "$1"

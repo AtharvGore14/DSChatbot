@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1875f0">
+    <link rel="icon" href="{{ url_for('static', filename='img/finpilot-logo.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/finpilot-logo.svg') }}">
+    <title>{% block title %}{{ brand }}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar" id="sidebar">
+            <a class="brand-block brand-home-link" href="{{ url_for('home') }}" aria-label="{{ brand }} — Home">
+                <div class="brand-logo">
+                    <img src="{{ url_for('static', filename='img/finpilot-logo.svg') }}" width="44" height="44" alt="" decoding="async">
+                </div>
+                <div class="brand-text">
+                    <p class="brand-title">{{ brand }}</p>
+                    <p class="brand-subtitle">Financial Intelligence</p>
+                </div>
+            </a>
+            <nav class="nav flex-column sidebar-nav" aria-label="Primary">
+                <a class="nav-link {% if request.endpoint == 'home' %}active{% endif %}" href="{{ url_for('home') }}" data-nav-tip="Home"><i class="fa-solid fa-house" aria-hidden="true"></i><span class="nav-label">Home</span></a>
+                <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %} {% if not logged_in_email %}nav-link-guest-lock{% endif %}" href="{{ url_for('dashboard') }}" data-nav-tip="Dashboard"><i class="fa-solid fa-table-columns" aria-hidden="true"></i><span class="nav-label">Dashboard</span>{% if not logged_in_email %}<i class="fa-solid fa-lock nav-lock-icon" title="Sign in to access" aria-hidden="true"></i>{% endif %}</a>
+                <a class="nav-link {% if request.endpoint == 'search' %}active{% endif %}" href="{{ url_for('search') }}" data-nav-tip="Stock Search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span class="nav-label">Stock Search</span></a>
+                <a class="nav-link {% if request.endpoint == 'analysis' %}active{% endif %} {% if not logged_in_email %}nav-link-guest-lock{% endif %}" href="{{ url_for('analysis') }}" data-nav-tip="Analysis"><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span class="nav-label">Analysis</span>{% if not logged_in_email %}<i class="fa-solid fa-lock nav-lock-icon" title="Sign in to access" aria-hidden="true"></i>{% endif %}</a>
+                <a class="nav-link {% if request.endpoint == 'compare' %}active{% endif %} {% if not logged_in_email %}nav-link-guest-lock{% endif %}" href="{{ url_for('compare') }}" data-nav-tip="Compare"><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i><span class="nav-label">Compare</span>{% if not logged_in_email %}<i class="fa-solid fa-lock nav-lock-icon" title="Sign in to access" aria-hidden="true"></i>{% endif %}</a>
+                <a class="nav-link {% if request.endpoint == 'optimizer' %}active{% endif %} {% if not logged_in_email %}nav-link-guest-lock{% endif %}" href="{{ url_for('optimizer') }}" data-nav-tip="Optimizer"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span class="nav-label">Optimizer</span>{% if not logged_in_email %}<i class="fa-solid fa-lock nav-lock-icon" title="Sign in to access" aria-hidden="true"></i>{% endif %}</a>
+                <a class="nav-link {% if request.endpoint == 'chatbot' %}active{% endif %}" href="{{ url_for('chatbot') }}" data-nav-tip="Portfolio analyst"><i class="fa-solid fa-robot" aria-hidden="true"></i><span class="nav-label">Analyst</span></a>
+                <a class="nav-link {% if request.endpoint == 'demo' %}active{% endif %}" href="{{ url_for('demo') }}" data-nav-tip="Algorithms Lab"><i class="fa-solid fa-flask-vial" aria-hidden="true"></i><span class="nav-label">Algorithms Lab</span></a>
+                <a class="nav-link {% if request.endpoint == 'admin' %}active{% endif %} {% if not logged_in_email %}nav-link-guest-lock{% endif %}" href="{{ url_for('admin') }}" data-nav-tip="Admin"><i class="fa-solid fa-user-shield" aria-hidden="true"></i><span class="nav-label">Admin</span>{% if not logged_in_email %}<i class="fa-solid fa-lock nav-lock-icon" title="Sign in to access" aria-hidden="true"></i>{% endif %}</a>
+                <a class="nav-link {% if request.endpoint == 'about' %}active{% endif %}" href="{{ url_for('about') }}" data-nav-tip="About"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span class="nav-label">About</span></a>
+            </nav>
+            <div class="sidebar-bottom">
+                {% if logged_in_email %}
+                <button type="button" class="sidebar-collapse-btn d-none d-md-flex" id="sidebarCollapseBtn" aria-controls="sidebar" aria-expanded="true" title="Minimize sidebar">
+                    <i class="fa-solid fa-angles-left collapse-icon-expand" aria-hidden="true"></i>
+                    <span class="collapse-btn-label">Minimize</span>
+                </button>
+                {% endif %}
+                <div class="sidebar-footer">
+                    {% if logged_in_email %}
+                    <div class="sidebar-user-block px-1">
+                        <div class="fw-semibold small text-truncate">{{ user_first_name or logged_in_email }}</div>
+                        <div class="small text-muted text-truncate sidebar-user-email" title="{{ logged_in_email }}">{{ logged_in_email }}</div>
+                    </div>
+                    <a class="btn btn-outline-secondary w-100 mb-0 sidebar-footer-btn" href="{{ url_for('logout') }}" data-nav-tip="Log out"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i><span class="nav-label">Log out</span></a>
+                    {% else %}
+                    <p class="small text-muted px-1 mb-2 sidebar-guest-hint">Dashboard, Analysis, Compare, Optimizer, and Admin require sign-in. Other pages are open.</p>
+                    <a class="btn btn-outline-primary w-100 mb-0 sidebar-footer-btn" href="{{ url_for('login') }}" data-nav-tip="Login"><i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i><span class="nav-label">Login</span></a>
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar glass-card" role="banner">
+                <div class="topbar-leading">
+                    <button type="button" class="btn btn-sm btn-outline-primary d-md-none topbar-menu-btn" id="sidebarToggle" aria-label="Open navigation menu">
+                        <i class="fa-solid fa-bars" aria-hidden="true"></i>
+                    </button>
+                    <div class="topbar-titles">
+                        <h2 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h2>
+                        <p class="topbar-subtitle">{% if user_first_name %}Hi, {{ user_first_name }} · {% endif %}Markets, structures, and guided insights</p>
+                    </div>
+                </div>
+                <form class="topbar-search" id="globalSearchForm" action="{{ url_for('search') }}" method="get" autocomplete="off">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="globalSearchInput" type="text" name="q" placeholder="Search symbols (e.g. TCS, RELIANCE)" aria-label="Global stock search">
+                    <div id="globalSearchSuggestions" class="topbar-search-suggestions d-none"></div>
+                </form>
+                <div class="topbar-actions">
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-sm btn-outline-secondary topbar-icon-btn" id="topbarNotifications" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-haspopup="true" aria-label="Notifications">
+                            <i class="fa-solid fa-bell" aria-hidden="true"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end shadow border-0 topbar-dropdown p-0" aria-labelledby="topbarNotifications">
+                            <div class="topbar-dropdown-head px-3 py-2 border-bottom">
+                                <span class="fw-semibold small">Notifications</span>
+                            </div>
+                            <div class="topbar-dropdown-body py-2 px-0">
+                                <p class="small text-muted px-3 mb-2 mb-0">You’re all caught up. Quick links:</p>
+                                <a class="dropdown-item small py-2" href="{{ url_for('dashboard') }}"><i class="fa-solid fa-gauge-high text-primary me-2"></i>Dashboard pulse</a>
+                                <a class="dropdown-item small py-2" href="{{ url_for('analysis') }}"><i class="fa-solid fa-file-pdf text-danger me-2"></i>Stock analysis &amp; PDF export</a>
+                                <a class="dropdown-item small py-2" href="{{ url_for('chatbot') }}"><i class="fa-solid fa-robot text-info me-2"></i>Open analyst</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-sm btn-outline-primary topbar-icon-btn" id="topbarAccount" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-haspopup="true" aria-label="Account menu">
+                            <i class="fa-solid fa-user" aria-hidden="true"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 topbar-dropdown" aria-labelledby="topbarAccount">
+                            {% if logged_in_email %}
+                            <li class="px-3 pt-2 pb-1">
+                                <div class="fw-semibold small text-truncate">{{ user_first_name or 'Signed in' }}</div>
+                                <div class="small text-muted text-truncate" title="{{ logged_in_email }}">{{ logged_in_email }}</div>
+                            </li>
+                            <li><hr class="dropdown-divider my-2"></li>
+                            <li><a class="dropdown-item small" href="{{ url_for('dashboard') }}"><i class="fa-solid fa-table-columns me-2 text-muted"></i>Dashboard</a></li>
+                            <li><a class="dropdown-item small" href="{{ url_for('analysis') }}"><i class="fa-solid fa-chart-pie me-2 text-muted"></i>Analysis</a></li>
+                            <li><a class="dropdown-item small" href="{{ url_for('optimizer') }}"><i class="fa-solid fa-layer-group me-2 text-muted"></i>Optimizer</a></li>
+                            <li><a class="dropdown-item small" href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket me-2 text-muted"></i>Log out</a></li>
+                            {% else %}
+                            <li class="px-3 pt-2 pb-1"><span class="small text-muted">Guest · sign in for locked pages</span></li>
+                            <li><hr class="dropdown-divider my-2"></li>
+                            <li><a class="dropdown-item small" href="{{ url_for('login') }}"><i class="fa-solid fa-right-to-bracket me-2 text-muted"></i>Login</a></li>
+                            <li><a class="dropdown-item small" href="{{ url_for('register') }}"><i class="fa-solid fa-user-plus me-2 text-muted"></i>Create account</a></li>
+                            <li><a class="dropdown-item small" href="{{ url_for('about') }}"><i class="fa-solid fa-circle-info me-2 text-muted"></i>About</a></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </header>
+
+            <section class="content-area">
+                {% block content %}{% endblock %}
+            </section>
+        </main>
+    </div>
+
+    {% if request.endpoint != 'chatbot' %}
+    <a href="{{ url_for('chatbot') }}" class="finpilot-chat-fab" title="Portfolio analyst" aria-label="Open portfolio analyst chatbot">
+        <i class="fa-solid fa-robot" aria-hidden="true"></i>
+    </a>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

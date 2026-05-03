@@ -1,0 +1,655 @@
+{% extends "base.html" %}
+{% block title %}Portfolio analyst · FinPilot DS{% endblock %}
+{% block page_title %}Portfolio analyst{% endblock %}
+
+{% block head_extra %}
+<style>
+    .chat-shell {
+        max-width: 880px;
+        margin: 0 auto;
+    }
+    .chat-header-bar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .chat-header-bar h5 {
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+    .chat-meta {
+        font-size: 0.78rem;
+        color: var(--muted);
+    }
+    .chat-feed-wrap {
+        border-radius: 16px;
+        border: 1px solid var(--stroke);
+        background: linear-gradient(180deg, #fbfdff 0%, #ffffff 60%);
+        box-shadow: 0 10px 28px rgba(21, 49, 98, 0.06);
+        overflow: hidden;
+    }
+    .chat-feed {
+        min-height: 200px;
+        max-height: min(58vh, 520px);
+        overflow-y: auto;
+        padding: 1rem 1.1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        scroll-behavior: smooth;
+    }
+    .chat-welcome {
+        border-radius: 14px;
+        padding: 1rem 1.15rem;
+        border: 1px dashed #cfe0fb;
+        background: rgba(237, 244, 255, 0.65);
+    }
+    .chat-welcome h6 {
+        font-weight: 700;
+        margin-bottom: 0.35rem;
+    }
+    .chat-quick-strip-wrap {
+        position: relative;
+        border-top: 1px solid var(--stroke);
+        background: #f9fafc;
+    }
+    /* Fade hint — more chips scroll under the right edge */
+    .chat-quick-strip-wrap::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 36px;
+        pointer-events: none;
+        background: linear-gradient(90deg, rgba(249, 250, 252, 0), #f9fafc 85%);
+    }
+    .chat-quick-strip {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 0.38rem;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 0.42rem 0.75rem;
+        scroll-padding-inline: 0.75rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: #c9d5ea transparent;
+    }
+    .chat-quick-strip::-webkit-scrollbar {
+        height: 3px;
+    }
+    .chat-quick-strip::-webkit-scrollbar-thumb {
+        background: #b8c9e6;
+        border-radius: 3px;
+    }
+    .chat-quick {
+        border: none;
+        cursor: pointer;
+        border-radius: 999px;
+        font-family: inherit;
+        transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    }
+    .chat-quick--chip {
+        flex: 0 0 auto;
+        padding: 0.26rem 0.65rem;
+        font-size: 0.72rem;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        color: #264f9c;
+        background: #fff;
+        border: 1px solid #dde7f5;
+        white-space: nowrap;
+    }
+    .chat-quick--chip:hover {
+        background: #eef4ff;
+        border-color: #9fb9ea;
+        color: #0f3d8a;
+    }
+    .chat-msg {
+        display: flex;
+        gap: 0.55rem;
+        max-width: 92%;
+        animation: chatFade 0.22s ease;
+    }
+    @keyframes chatFade {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .chat-msg--user {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+    }
+    .chat-msg--ai {
+        align-self: flex-start;
+    }
+    .chat-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        font-size: 0.85rem;
+    }
+    .chat-avatar--user {
+        background: linear-gradient(145deg, #1875f0, #0a55c0);
+        color: #fff;
+    }
+    .chat-avatar--ai {
+        background: #eef4ff;
+        color: #1875f0;
+        border: 1px solid #dbe7ff;
+    }
+    .chat-bubble-body {
+        border-radius: 14px;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.9rem;
+        line-height: 1.45;
+    }
+    .chat-msg--user .chat-bubble-body {
+        background: linear-gradient(145deg, #1875f0, #1366d8);
+        color: #fff;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 6px 18px rgba(24, 117, 240, 0.22);
+    }
+    .chat-msg--ai .chat-bubble-body {
+        background: #ffffff;
+        border: 1px solid var(--stroke);
+        border-bottom-left-radius: 4px;
+        color: var(--text);
+        white-space: normal;
+        word-break: break-word;
+    }
+    .chat-msg--ai .chat-bubble-body .chat-para {
+        margin-bottom: 0.65rem;
+        line-height: 1.5;
+        font-size: 0.9rem;
+    }
+    .chat-msg--ai .chat-bubble-body .chat-para:last-child {
+        margin-bottom: 0;
+    }
+    .chat-msg--ai .chat-bubble-body .chat-section-title {
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        font-size: 0.82rem;
+        letter-spacing: 0.02em;
+        color: #153162;
+        margin: 0.75rem 0 0.4rem;
+    }
+    .chat-msg--ai .chat-bubble-body .chat-section-title:first-child {
+        margin-top: 0;
+    }
+    .chat-msg--ai .chat-table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0.35rem 0 0.75rem;
+        max-width: 100%;
+    }
+    .chat-msg--ai .chat-data-table {
+        width: 100%;
+        min-width: 280px;
+        font-size: 0.82rem;
+        border-collapse: collapse;
+        margin: 0;
+        --chat-table-border: #dbe4f3;
+    }
+    .chat-msg--ai .chat-data-table th,
+    .chat-msg--ai .chat-data-table td {
+        border: 1px solid var(--chat-table-border);
+        padding: 0.38rem 0.55rem;
+        vertical-align: top;
+    }
+    .chat-msg--ai .chat-data-table thead th {
+        background: linear-gradient(180deg, #f3f7ff 0%, #eef4ff 100%);
+        font-weight: 600;
+        color: #153162;
+        white-space: nowrap;
+    }
+    .chat-msg--ai .chat-data-table tbody tr:nth-child(even) {
+        background: rgba(247, 250, 255, 0.65);
+    }
+    .chat-msg--ai .chat-bubble-body .chat-report-banner {
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: #153162;
+        padding: 0.35rem 0 0.5rem;
+        border-bottom: 2px solid #cfe0fb;
+        margin-bottom: 0.65rem;
+    }
+    .chat-msg-links {
+        margin-left: 42px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+    .chat-msg-links .chat-link-pill {
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        padding: 0.28rem 0.75rem;
+    }
+    .chat-composer {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-end;
+        padding: 0.55rem 0.85rem 0.85rem;
+        border-top: 1px solid #eef1f6;
+        background: #fff;
+    }
+    .chat-composer textarea {
+        resize: none;
+        min-height: 44px;
+        max-height: 140px;
+        border-radius: 14px;
+        border: 1px solid var(--stroke);
+        padding: 0.65rem 0.85rem;
+        font-size: 0.9rem;
+        line-height: 1.35;
+    }
+    .chat-composer textarea:focus {
+        border-color: #1875f0;
+        box-shadow: 0 0 0 3px rgba(24, 117, 240, 0.12);
+        outline: none;
+    }
+    .chat-composer .btn-send {
+        border-radius: 14px;
+        padding: 0.55rem 1.15rem;
+        flex-shrink: 0;
+    }
+    .chat-provider-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border-radius: 999px;
+        padding: 0.25rem 0.65rem;
+        font-size: 0.72rem;
+        font-weight: 600;
+        margin-top: 0.35rem;
+        background: #f4f8ff;
+        border: 1px solid #e4ecfb;
+        color: var(--muted);
+    }
+    .typing-dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #1875f0;
+        animation: chatBounce 1s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes chatBounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+        40% { transform: translateY(-4px); opacity: 1; }
+    }
+    .portfolio-io-toolbar .btn.disabled {
+        pointer-events: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-shell" id="chatAnalystRoot">
+    <div class="chat-header-bar">
+        <div>
+            <h5 class="mb-1">Portfolio analyst (scoped)</h5>
+            <p class="chat-meta mb-0">Import your broker JSON below for holdings-aware answers; otherwise the coursework optimizer + catalog apply. No live web or exchange feeds.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            {% if history %}
+            <a class="btn btn-sm btn-outline-secondary rounded-pill" href="{{ url_for('chatbot', clear='1') }}" title="Start a fresh thread">Clear chat</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% include "_portfolio_data_toolbar.html" %}
+
+    <div class="chat-feed-wrap mb-3">
+        <div class="chat-feed" id="chatWindow" role="log" aria-live="polite" aria-relevant="additions">
+            {% if not history %}
+            <div class="chat-welcome mb-1">
+                <h6 class="mb-1">Start here</h6>
+                <p class="small text-muted mb-0">Import portfolio JSON above if you have an export. Then try value, allocation, holdings, P&amp;L, risk, compare, or full analysis.</p>
+            </div>
+            {% endif %}
+
+            {% for item in history %}
+            <div class="chat-msg chat-msg--user">
+                <span class="chat-avatar chat-avatar--user" aria-hidden="true"><i class="fa-solid fa-user"></i></span>
+                <div class="chat-bubble-body">{{ item.query }}</div>
+            </div>
+            <div class="chat-msg chat-msg--ai">
+                <span class="chat-avatar chat-avatar--ai" aria-hidden="true"><i class="fa-solid fa-robot"></i></span>
+                <div>
+                    <div class="chat-bubble-body chat-bubble-body--rich">{{ item.reply|chat_reply_html }}</div>
+                    {% if item.links %}
+                    <div class="chat-msg-links mt-2 mb-1">
+                        {% for label, href in item.links %}
+                        <a class="btn btn-sm btn-outline-primary chat-link-pill" href="{{ href|e }}">{{ label }}</a>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% if item.provider == 'external' %}
+                    <span class="chat-provider-pill" title="Wording may be API-polished; numbers stay from your session."><i class="fa-solid fa-microchip"></i>External model</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="chat-quick-strip-wrap">
+            <div class="chat-quick-strip" id="chatQuickPanel" role="toolbar" aria-label="Questions about your imported portfolio">
+                <button type="button" class="chat-quick chat-quick--chip" data-q="Why is my portfolio red or green today?" title="Day move from your export">Why up / down today?</button>
+                <button type="button" class="chat-quick chat-quick--chip" data-q="Which positions are dragging or lifting my portfolio today?" title="Contributors from your export">Who’s dragging / lifting?</button>
+                <button type="button" class="chat-quick chat-quick--chip" data-q="Which of my holdings have total return above 10%?" title="Filter by return on cost">Holdings above 10% return?</button>
+                <button type="button" class="chat-quick chat-quick--chip" data-q="What are my holdings from my import?" title="List positions">My holdings</button>
+            </div>
+        </div>
+
+        <form class="chat-composer" id="chatForm" method="post" action="{{ url_for('chatbot') }}">
+            <label class="visually-hidden" for="chatInput">Message</label>
+            <textarea id="chatInput" name="q" class="form-control flex-grow-1" rows="1" placeholder="Ask about your imported portfolio (or type two tickers to compare)…" autocomplete="off" required maxlength="200"></textarea>
+            <button class="btn btn-gradient btn-send" id="chatSendBtn" type="submit" aria-label="Send message"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+    </div>
+
+    <div class="small text-secondary d-flex flex-wrap align-items-center gap-2" id="chatFooterHint">
+        <span id="chatProviderHint">
+            {% if history and history[-1].provider == 'external' %}
+            Last reply: optional external wording — numbers from your session
+            {% elif history %}
+            Last reply: in-app engine (no external chat API)
+            {% else %}
+            {% if chat_smart_enabled|default(false) %}
+            Smart chat on — replies are polished by your configured API; facts stay from this app.
+            {% else %}
+            Portfolio-only replies — optional API polishes wording; facts stay from this app.
+            {% endif %}
+            {% endif %}
+        </span>
+        <span class="text-muted">·</span>
+        <span class="text-muted">Enter to send · Shift+Enter for newline</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+        function escapeHtml(s) {
+            if (s == null) return "";
+            return String(s)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
+        function stripOuterPipeRow(line) {
+            let s = String(line).trim();
+            if (s.startsWith("|")) s = s.slice(1).trimStart();
+            if (s.endsWith("|")) s = s.slice(0, -1).trimEnd();
+            return s.split("|").map(function (c) { return c.trim(); });
+        }
+
+        function isMarkdownTableSep(line) {
+            const cells = stripOuterPipeRow(line);
+            return cells.length >= 2 && cells.every(function (p) { return /^:?-{3,}:?$/.test(p); });
+        }
+
+        function isProbablyTableRow(line) {
+            const t = String(line).trim();
+            return t.startsWith("|") && t.includes("|") && t.length >= 3;
+        }
+
+        function tableBlockToHtml(lines) {
+            if (lines.length < 2) return null;
+            const head = stripOuterPipeRow(lines[0]);
+            if (!head.length) return null;
+            if (!isMarkdownTableSep(lines[1])) return null;
+            const body = [];
+            for (let r = 2; r < lines.length; r++) {
+                if (!isProbablyTableRow(lines[r])) break;
+                const row = stripOuterPipeRow(lines[r]);
+                while (row.length < head.length) row.push("");
+                if (row.length > head.length) row.length = head.length;
+                body.push(row);
+            }
+            if (!body.length) return null;
+            let html = '<div class="table-responsive chat-table-responsive">';
+            html += '<table class="table table-sm chat-data-table"><thead><tr>';
+            head.forEach(function (c) {
+                html += "<th scope=\"col\">" + escapeHtml(c) + "</th>";
+            });
+            html += "</tr></thead><tbody>";
+            body.forEach(function (row) {
+                html += "<tr>";
+                row.forEach(function (c) {
+                    html += "<td>" + escapeHtml(c) + "</td>";
+                });
+                html += "</tr>";
+            });
+            html += "</tbody></table></div>";
+            return html;
+        }
+
+        function inlineEm(text) {
+            return escapeHtml(text).replace(/_([^_\n][^_]{0,400}?)_/g, function (_, inner) {
+                return "<em>" + escapeHtml(inner) + "</em>";
+            });
+        }
+
+        function flushParagraph(lines, out) {
+            if (!lines.length) return;
+            const t = lines.join("\n").trimEnd();
+            if (!t) return;
+            if (
+                (/^[\u2550═]{2,}/.test(t) || t.indexOf("══") === 0)
+                && /REPORT|INTELLIGENCE|ANALYSIS|tables/i.test(t)
+            ) {
+                out.push('<div class="chat-report-banner">' + escapeHtml(t) + "</div>");
+                return;
+            }
+            if (/^\d+\)\s+/.test(t) && t.indexOf("\n") === -1 && t.length < 140) {
+                out.push('<div class="chat-section-title">' + escapeHtml(t) + "</div>");
+                return;
+            }
+            out.push('<p class="chat-para">' + inlineEm(t).replace(/\n/g, "<br>") + "</p>");
+        }
+
+        /** Plain text + GitHub pipe tables → safe HTML for analyst bubbles */
+        function formatChatReplyToHtml(raw) {
+            const lines = String(raw).replace(/\r\n/g, "\n").split("\n");
+            const out = [];
+            let buf = [];
+            let i = 0;
+            while (i < lines.length) {
+                const line = lines[i];
+                if (line === "") {
+                    flushParagraph(buf, out);
+                    buf = [];
+                    i++;
+                    continue;
+                }
+                if (isProbablyTableRow(line) && i + 1 < lines.length && isMarkdownTableSep(lines[i + 1])) {
+                    flushParagraph(buf, out);
+                    buf = [];
+                    const tbl = [lines[i], lines[i + 1]];
+                    i += 2;
+                    while (i < lines.length && isProbablyTableRow(lines[i])) {
+                        tbl.push(lines[i]);
+                        i++;
+                    }
+                    const th = tableBlockToHtml(tbl);
+                    if (th) out.push(th);
+                    else {
+                        buf = tbl;
+                        flushParagraph(buf, out);
+                        buf = [];
+                    }
+                    continue;
+                }
+                buf.push(line);
+                i++;
+            }
+            flushParagraph(buf, out);
+            return out.join("");
+        }
+
+        const chatForm = document.getElementById("chatForm");
+        const chatInput = document.getElementById("chatInput");
+        const chatWindow = document.getElementById("chatWindow");
+        const chatSendBtn = document.getElementById("chatSendBtn");
+        const chatProviderHint = document.getElementById("chatProviderHint");
+        const chatQuickPanel = document.getElementById("chatQuickPanel");
+        if (!chatForm || !chatInput || !chatWindow || !chatSendBtn || !chatProviderHint) {
+            return;
+        }
+
+        function scrollChat() {
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function el(tag, cls, html) {
+            const n = document.createElement(tag);
+            if (cls) n.className = cls;
+            if (html !== undefined) n.innerHTML = html;
+            return n;
+        }
+
+        function addUserMessage(text) {
+            const wrap = el("div", "chat-msg chat-msg--user");
+            wrap.innerHTML =
+                '<span class="chat-avatar chat-avatar--user" aria-hidden="true"><i class="fa-solid fa-user"></i></span>'
+                + '<div class="chat-bubble-body"></div>';
+            wrap.querySelector(".chat-bubble-body").textContent = text;
+            chatWindow.appendChild(wrap);
+            scrollChat();
+            return wrap;
+        }
+
+        function addAiShell() {
+            const wrap = el("div", "chat-msg chat-msg--ai");
+            wrap.innerHTML =
+                '<span class="chat-avatar chat-avatar--ai" aria-hidden="true"><i class="fa-solid fa-robot"></i></span>'
+                + '<div><div class="chat-bubble-body typing-indicator"></div></div>';
+            const body = wrap.querySelector(".typing-indicator");
+            body.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>'
+                + '<span class="ms-2 small text-muted">Thinking…</span>';
+            chatWindow.appendChild(wrap);
+            scrollChat();
+            return { wrap, body };
+        }
+
+        function renderAiMessage(container, text, replyHtml, links, provider) {
+            const wrap = container.wrap;
+            const parent = wrap.children[1];
+            if (!parent) {
+                return;
+            }
+            const inner = parent.querySelector(".chat-bubble-body");
+            if (!inner) {
+                return;
+            }
+            inner.classList.remove("typing-indicator");
+            inner.classList.add("chat-bubble-body--rich");
+            inner.innerHTML = replyHtml && replyHtml.length ? replyHtml : formatChatReplyToHtml(text);
+
+            parent.querySelectorAll(".chat-msg-links, .chat-provider-pill").forEach((n) => n.remove());
+
+            if (Array.isArray(links) && links.length) {
+                const row = el("div", "chat-msg-links mt-2 mb-1");
+                links.forEach(function (entry) {
+                    if (!Array.isArray(entry) || entry.length < 2) return;
+                    const a = el("a", "btn btn-sm btn-outline-primary chat-link-pill");
+                    a.href = entry[1];
+                    a.textContent = entry[0];
+                    row.appendChild(a);
+                });
+                parent.appendChild(row);
+            }
+
+            if (provider === "external") {
+                const pill = el("span", "chat-provider-pill");
+                pill.title = "Wording may be API-polished; numbers stay from your session.";
+                pill.innerHTML = '<i class="fa-solid fa-microchip"></i>External model';
+                parent.appendChild(pill);
+            }
+            scrollChat();
+        }
+
+        chatInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                if (chatInput.value.trim()) {
+                    chatForm.requestSubmit();
+                }
+            }
+        });
+
+        chatInput.addEventListener("input", function () {
+            chatInput.style.height = "auto";
+            chatInput.style.height = Math.min(chatInput.scrollHeight, 140) + "px";
+        });
+
+        function bindQuickAskButtons(root) {
+            if (!root) return;
+            root.querySelectorAll(".chat-quick[data-q]").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    chatInput.value = btn.getAttribute("data-q") || "";
+                    chatInput.focus();
+                    chatInput.dispatchEvent(new Event("input"));
+                    chatForm.requestSubmit();
+                });
+            });
+        }
+        bindQuickAskButtons(chatQuickPanel);
+
+        chatForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const query = chatInput.value.trim();
+            if (!query) return;
+
+            const welcome = chatWindow.querySelector(".chat-welcome");
+            if (welcome) welcome.remove();
+
+            addUserMessage(query);
+            chatInput.value = "";
+            chatInput.style.height = "auto";
+            chatSendBtn.disabled = true;
+
+            const ai = addAiShell();
+
+            try {
+                const response = await fetch("{{ url_for('chatbot_api') }}", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ q: query }),
+                });
+                const data = await response.json();
+                const reply = data.reply || "No response.";
+                const replyHtml = data.reply_html || "";
+                renderAiMessage(ai, reply, replyHtml, data.links || [], data.provider || "local");
+                chatProviderHint.textContent = data.provider === "external"
+                    ? "Last reply used optional external wording — numbers stay from your session."
+                    : "Last reply: in-app engine (no external chat API).";
+            } catch (error) {
+                renderAiMessage(ai, "Network error — check connection and try again.", "", [], "local");
+                chatProviderHint.textContent = "Last reply source: local assistant";
+            } finally {
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+                scrollChat();
+            }
+        });
+    })();
+</script>
+{{ super() }}
+{% endblock %}

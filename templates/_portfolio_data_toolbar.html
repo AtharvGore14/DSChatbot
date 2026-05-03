@@ -1,0 +1,28 @@
+{# Requires: portfolio_status (from portfolio_snapshot.get_portfolio_status) #}
+<div
+    id="portfolioIoToolbar"
+    class="portfolio-io-toolbar card border-0 shadow-sm mb-3"
+    data-status-url="{{ url_for('portfolio_data_status_api') }}"
+    data-api-url="{{ url_for('portfolio_data_api') }}"
+>
+    <div class="card-body py-2 px-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="small text-secondary" data-pf-status>
+            <strong class="text-dark">Portfolio data</strong> —
+            {% if portfolio_status.loaded %}
+            {{ portfolio_status.positions }} position(s) · {{ portfolio_status.source }}{% if portfolio_status.filename %} ({{ portfolio_status.filename }}){% endif %}
+            {% if portfolio_status.personal %}<span class="badge rounded-pill bg-success-subtle text-success-emphasis ms-1">Your account</span>{% endif %}
+            {% else %}
+            none loaded — sign in to save imports per account; guest imports stay on this browser session only
+            {% endif %}
+        </div>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <label class="btn btn-sm btn-primary mb-0 text-white" style="cursor:pointer;">
+                Import JSON
+                <input type="file" name="file" accept=".json,application/json" class="d-none" data-pf-file title="Import portfolio JSON">
+            </label>
+            <a class="btn btn-sm btn-outline-secondary {% if not portfolio_status.loaded %}disabled opacity-50{% endif %}" data-pf-export href="{{ url_for('portfolio_data_api') }}" download="portfolio_export.json">Export</a>
+            <button type="button" class="btn btn-sm btn-outline-danger" data-pf-clear {% if not portfolio_status.loaded %}disabled{% endif %}>Clear import</button>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/portfolio_toolbar.js') }}" defer></script>

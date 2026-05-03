@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Stock Analysis · FinPilot DS{% endblock %}
+{% block page_title %}Stock Analysis{% endblock %}
+{% block scripts %}
+<script>
+    window.analysisChartData = {
+        labels: {{ chart_data.labels|tojson }},
+        priceSeries: {{ chart_data.price_series|tojson }},
+        dma50Series: {{ chart_data.dma50_series|tojson }},
+        symbol: {{ analysis_data.symbol|tojson }}
+    };
+    window.analysisGapChartData = {{ analysis_gap_chart_data|tojson }};
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const exportAvailable = {{ pdf_export_available|tojson }};
+    const exportUrl = {{ url_for('analysis_export')|tojson }};
+    const fallbackSymbol = {{ analysis_data.symbol|tojson }};
+    const pdfUserSlug = {{ analysis_pdf_user_slug|tojson }};
+    function currentSymbol() {
+        const sel = document.querySelector('select[name="symbol"]');
+        return (sel && sel.value) ? sel.value : fallbackSymbol;
+    }
+    function safePdfName(sym) {
+        const symPart = sym.replace(/[^A-Za-z0-9._-]+/g, "_").replace(/\.+/g, "_");
+        const userPart = String(pdfUserSlug || "user").replace(/[^A-Za-z0-9._-]+/g, "_");
+        return symPart + "_" + userPart + "_analysis_report.pdf";
+    }
+    function mimePart(ctHeader) {
+        return String(ctHeader || "").split(";")[0].trim().toLowerCase();
+    }
+    async function blobStartsWithPdfMagic(blob) {
+        if (!blob || blob.size < 5) return false;
+        const buf = await blob.slice(0, 5).arrayBuffer();
+        const prefix = String.fromCharCode.apply(null, new Uint8Array(buf));
+        return prefix.startsWith("%PDF");
+    }
+    function fallbackNavigateDownload(sym) {
+        const url = exportUrl + "?symbol=" + encodeURIComponent(sym);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = safePdfName(sym);
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+    const btn = document.getElementById("analysisFullReportBtn");
+    const statusEl = document.getElementById("analysisReportStatus");
+    if (!btn || !exportAvailable) return;
+
+    btn.addEventListener("click", async function () {
+        const sym = currentSymbol();
+        const url = exportUrl + "?symbol=" + encodeURIComponent(sym);
+        btn.disabled = true;
+        if (statusEl) {
+            statusEl.textContent = "Preparing PDF…";
+            statusEl.classList.remove("text-danger");
+        }
+        try {
+            const res = await fetch(url, { credentials: "same-origin", cache: "no-store" });
+            const mp = mimePart(res.headers.get("Content-Type"));
+            if (mp === "text/html") {
+                throw new Error("Please sign in to download the report.");
+            }
+            if (!res.ok) {
+                const errText = (await res.text()).trim();
+                throw new Error(errText || ("Report failed (HTTP " + res.status + "). Ensure fpdf2 is installed on the server."));
+            }
+            const blob = await res.blob();
+            if (!blob || blob.size === 0) {
+                throw new Error("PDF generator returned an empty file. Install fpdf2: pip install fpdf2");
+            }
+            const magicPdf = await blobStartsWithPdfMagic(blob);
+            if (!mp.includes("pdf") && !magicPdf) {
+                const errText = (await blob.text()).trim();
+                throw new Error(errText || ("Unexpected response type (" + mp + "). PDF generator may be misconfigured."));
+            }
+            const objectUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = objectUrl;
+            a.download = safePdfName(sym);
+            a.rel = "noopener";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(objectUrl);
+            if (statusEl) statusEl.textContent = "";
+        } catch (err) {
+            console.error(err);
+            const msg = (err && err.message) ? String(err.message) : "Download failed.";
+            const isNetwork = err instanceof TypeError;
+            if (statusEl) {
+                statusEl.classList.toggle("text-danger", !isNetwork);
+                statusEl.textContent = isNetwork
+                    ? (msg + " Trying a direct download link…")
+                    : msg;
+            }
+            if (isNetwork) {
+                fallbackNavigateDownload(sym);
+                setTimeout(function () {
+                    if (statusEl && !statusEl.classList.contains("text-danger")) statusEl.textContent = "";
+                }, 6000);
+            }
+        } finally {
+            btn.disabled = false;
+            setTimeout(function () {
+                if (statusEl && !statusEl.classList.contains("text-danger")) statusEl.textContent = "";
+            }, 5000);
+        }
+    });
+});
+</script>
+{{ super() }}
+{% endblock %}
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="row g-3 mb-2">
+    <div class="col-12">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endwith %}
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="glass-card p-3 mb-3">
+            <form class="row g-2" method="get" action="{{ url_for('analysis') }}">
+                <div class="col-md-9">
+                    <select class="form-select" name="symbol">
+                        {% for stock in stocks %}
+                        <option value="{{ stock.symbol }}" {% if stock.symbol == analysis_data.symbol %}selected{% endif %}>{{ stock.symbol }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-gradient w-100">Analyze</button>
+                </div>
+            </form>
+        </div>
+        <div class="glass-card p-3 mb-3">
+            <h5 class="mb-3">Price + Moving Averages</h5>
+            <canvas id="analysisChart" height="120"></canvas>
+        </div>
+        <div class="glass-card p-3">
+            <h5 class="mb-3">Price vs 50 DMA Gap</h5>
+            <canvas id="analysisGapChart" height="100"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card p-3">
+            <h6>Analysis Snapshot - {{ analysis_data.symbol }}</h6>
+            <ul class="list-unstyled mb-0 mt-3">
+                <li class="d-flex justify-content-between py-1"><span>Current Price</span><strong>₹ {{ analysis_data.price }}</strong></li>
+                <li class="d-flex justify-content-between py-1"><span>Daily Return</span><strong class="{{ 'text-success' if analysis_data.change >= 0 else 'text-danger' }}">{{ analysis_data.change }}%</strong></li>
+                <li class="d-flex justify-content-between py-1"><span>Volatility</span><strong>{{ analysis_data.volatility }}</strong></li>
+                <li class="d-flex justify-content-between py-1"><span>50 DMA</span><strong>₹ {{ analysis_data.dma50 }}</strong></li>
+                <li class="d-flex justify-content-between py-1"><span>200 DMA</span><strong>₹ {{ analysis_data.dma200 }}</strong></li>
+            </ul>
+            <button type="button" class="btn btn-gradient w-100 mt-3" id="analysisFullReportBtn" {% if not pdf_export_available %}disabled title="Install fpdf2 on the server (pip install fpdf2)"{% endif %}>Generate full report (PDF)</button>
+            {% if not pdf_export_available %}
+            <p class="small text-warning mb-0 mt-1">PDF export needs the <code>fpdf2</code> package. Run <code>pip install fpdf2</code> in this app&rsquo;s environment.</p>
+            {% endif %}
+            <p class="small mb-0 mt-1" id="analysisReportStatus" aria-live="polite"></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
